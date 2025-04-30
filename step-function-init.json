@@ -1,0 +1,10 @@
+{
+    "version": "0007",
+    "run_type": "constrained",
+    "reach_subset_file": "reaches_of_interest.json",
+    "temporal_range": "&start_time=2020-09-01T00:00:00Z&end_time=2025-10-30T00:00:00Z&",
+    "tolerated_failure_percentage": "50",
+    "run_gbpriors": "false",
+    "run_postdiagnostics": "true",
+    "counter": "test-run-0007"
+}
