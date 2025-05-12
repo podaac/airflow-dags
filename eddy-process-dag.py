@@ -20,8 +20,8 @@ with DAG(
       task_id="test_error_message",
       image="alpine",
       cmds=["/bin/sh"],
-      arguments=["-c", "echo hello world; echo Custom error > /dev/termination-log; exit 1;"],
-      name="test-error-message",
-      email="airflow@example.com",
-      email_on_failure=True,
+      arguments=["-c", "echo hello world"]
+      # name="test-error-message",
+      # email="airflow@example.com",
+      # email_on_failure=True,
     )
