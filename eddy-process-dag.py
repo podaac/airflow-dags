@@ -17,10 +17,10 @@ with DAG(
 
     # Get step function input from JSON file
     k = KubernetesPodOperator(
-      task_id="test_error_message",
-      image="alpine",
-      cmds=["/bin/sh"],
-      arguments=["-c", "echo hello world"]
+      task_id="test_sar_eddy_docker",
+      image="gangl/sar-eddy",
+      #cmds=["/bin/sh"],
+      #arguments=["-c", "echo hello world"]
       # name="test-error-message",
       # email="airflow@example.com",
       # email_on_failure=True,
