@@ -7,6 +7,25 @@ from datetime import datetime
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.providers.cncf.kubernetes.secret import Secret
 
+task_config = {
+        "kubernetes_executor_conf": {
+            "pod_override": {
+                "spec": {
+                    "containers": [
+                        {
+                            "env": [
+                                {
+                                    "name": "SHM_SIZE",
+                                    "value": "256m"  # Or the size you need
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
 with DAG(
     dag_id="sar-eddy-detection",
     schedule_interval=None,
@@ -19,6 +38,7 @@ with DAG(
     k = KubernetesPodOperator(
       task_id="test_sar_eddy_docker",
       image="gangl/sar-eddy",
+      task_config=task_config
       #cmds=["/bin/sh"],
       #arguments=["-c", "echo hello world"]
       # name="test-error-message",
