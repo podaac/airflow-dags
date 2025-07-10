@@ -95,12 +95,12 @@ with DAG(
         # [END howto_awslogs_ecs]
     )
 
-  await_task_finish = EcsTaskStateSensor(
-    task_id="await_task_finish",
-    cluster=cluster_name,
-    task=run_task.output["ecs_task_arn"],
-    target_state=EcsTaskStates.STOPPED,
-    failure_states={EcsTaskStates.NONE},
-  )
+#  await_task_finish = EcsTaskStateSensor(
+#    task_id="await_task_finish",
+#    cluster=cluster_name,
+#    task=run_task.output["ecs_task_arn"],
+#    target_state=EcsTaskStates.STOPPED,
+#    failure_states={EcsTaskStates.NONE},
+#  )
 
-  run_task >> await_task_finish
+  run_task # >> await_task_finish
