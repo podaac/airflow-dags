@@ -40,6 +40,8 @@ from airflow.utils.trigger_rule import TriggerRule
 
 venue = os.environ.get("VENUE", "SIT").lower()
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
+cluster_subnets = ["subnet-04fb3675968744380","subnet-0adee3417fedb7f05","subnet-0d15606f25bd4047b"]
+default_sg = os.environ.get("SECURITY_GROUP_ID", "sg-09e578df0adec589e") 
 
 with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator",
@@ -87,7 +89,12 @@ with DAG(
         ],
         },
 	#wait_for_completion=False,
-	network_configuration={"awsvpcConfiguration": {"subnets": ["subnet-04fb3675968744380","subnet-0adee3417fedb7f05","subnet-0d15606f25bd4047b"]}},
+	network_configuration={
+          "awsvpcConfiguration": {
+              "securityGroups": [default_sg],
+              "subnets": cluster_subnets,
+          },
+	},
         # [START howto_awslogs_ecs]
         #awslogs_group=log_group_name,
         #awslogs_region=aws_region,
