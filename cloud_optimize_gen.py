@@ -56,7 +56,7 @@ with DAG(
         task_id="run_task",
         cluster=cluster_name,
         deferrable=True,
-        task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task:1",
+        task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task:latest",
         capacity_provider_strategy=[{"capacityProvider":"service-virtualzarr-gen-sit-ecs-capacity-provider"}],
         overrides={
         "containerOverrides": [
