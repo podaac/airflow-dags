@@ -57,7 +57,7 @@ with DAG(
   run_task = EcsRunTaskOperator(
         task_id="run_task",
         cluster=cluster_name,
-        deferrable=True,
+        #deferrable=True,
         task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task",
         capacity_provider_strategy=[{"capacityProvider":"service-virtualzarr-gen-sit-ecs-capacity-provider"}],
         overrides={
@@ -105,12 +105,12 @@ with DAG(
         container_name="cloud-optimization-generation",
     )
 
-#  await_task_finish = EcsTaskStateSensor(
-#    task_id="await_task_finish",
-#    cluster=cluster_name,
-#    task=run_task.output["ecs_task_arn"],
-#    target_state=EcsTaskStates.STOPPED,
-#    failure_states={EcsTaskStates.NONE},
-#  )
+ await_task_finish = EcsTaskStateSensor(
+   task_id="await_task_finish",
+   cluster=cluster_name,
+   task=run_task.output["ecs_task_arn"],
+   target_state=EcsTaskStates.STOPPED,
+   failure_states={EcsTaskStates.NONE},
+ )
 
-  run_task # >> await_task_finish
+  run_task  >> await_task_finish
