@@ -104,6 +104,8 @@ with DAG(
         # [END howto_awslogs_ecs]
         container_name="cloud-optimization-generation",
     )
+  # Use the sensor below to monitor job	
+  run_task.wait_for_completion = False
 
   await_task_finish = EcsTaskStateSensor(
         task_id="await_task_finish",
