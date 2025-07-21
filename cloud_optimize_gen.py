@@ -60,7 +60,6 @@ with DAG(
         deferrable=True,
         task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task",
         capacity_provider_strategy=[{"capacityProvider":"service-virtualzarr-gen-sit-ecs-capacity-provider"}],
-        container_name="cloud-optimization-generation",
         overrides={
         "containerOverrides": [
             {
@@ -103,6 +102,7 @@ with DAG(
         #awslogs_region=aws_region,
         #awslogs_stream_prefix=f"ecs/{container_name}",
         # [END howto_awslogs_ecs]
+        container_name="cloud-optimization-generation",
     )
 
 #  await_task_finish = EcsTaskStateSensor(
