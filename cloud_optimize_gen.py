@@ -52,12 +52,15 @@ with DAG(
     catchup=False,
 ) as dag:
 
+  # We need to set container name here as it will not be returned if the status is provisioning (sometimes?).
+  # https://github.com/apache/airflow/issues/51429
   run_task = EcsRunTaskOperator(
         task_id="run_task",
         cluster=cluster_name,
         deferrable=True,
         task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task",
         capacity_provider_strategy=[{"capacityProvider":"service-virtualzarr-gen-sit-ecs-capacity-provider"}],
+        container_name="cloud-optimization-generation",
         overrides={
         "containerOverrides": [
             {
