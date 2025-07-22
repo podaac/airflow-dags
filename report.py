@@ -281,7 +281,7 @@ def format_output(module_data, workflow):
     total_failed_percentage = (total_failed / total_jobs) * 100
     total_execution_time = module_data["total_time"]
 
-    totals = f"{workflow} execution: '{module_data["name"]}'\n\n" \
+    totals = f"{workflow} execution: '{module_data['name']}'\n\n" \
         + f"- Total Jobs: {'{:,}'.format(total_jobs)}\n" \
         + f"- Total Succeeded: {'{:,}'.format(total_succeeded)}\n" \
         + f"- Total Failed: {'{:,}'.format(total_failed)}\n" \
