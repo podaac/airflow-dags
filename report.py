@@ -82,7 +82,11 @@ def get_task_stats(event):
     if "taskSucceededEventDetails" in event.keys():
         event_data = json.loads(event["taskSucceededEventDetails"]["output"])
     if "taskFailedEventDetails" in event.keys():
-        event_data = json.loads(event["taskFailedEventDetails"]["output"])
+        try:
+            if "output" in event["taskFailedEventDetails"]:
+                event_data = json.loads(event["taskFailedEventDetails"]["output"])
+        except (KeyError, json.JSONDecodeError):
+            logging.warning("Failed to parse output from taskFailedEventDetails")
 
     task_stats = {}
     if event_data:
@@ -132,13 +136,17 @@ def get_map_stats(map_run_arn, module_name):
     map_run_data = SFN.describe_map_run(mapRunArn=map_run_arn)
     total = map_run_data["executionCounts"]["total"]
     failed = map_run_data["executionCounts"]["failed"]
+    
+    # Use current time if stopDate doesn't exist
+    stop_time = map_run_data.get("stopDate", datetime.datetime.now(datetime.timezone.utc))
+    
     return {
         "Module": module_name,
         "Total Jobs": total,
         "Succeeded": map_run_data["executionCounts"]["succeeded"],
         "Failed": failed,
         "Percentage Failed": (failed/total)*100,
-        "Execution Time": str(map_run_data["stopDate"] - map_run_data["startDate"])
+        "Execution Time": str(stop_time - map_run_data["startDate"])
     }
 
 def get_failures(map_run_arn):
