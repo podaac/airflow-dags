@@ -65,7 +65,7 @@ def swot_confluence_stepfunction():
                 "-s", "podaac-dev-swot-sos"
             ]
         },
-        aws_conn_id='podaac-services-sit',
+        #aws_conn_id='podaac-services-sit',
     )
 
     input_dict >> start >> get_output >> publish_cnm >> update_input()
