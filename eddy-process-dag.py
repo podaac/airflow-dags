@@ -32,13 +32,13 @@ with DAG(
       task_id="test_sar_eddy_docker",
       image="ghcr.io/mike-gangl/podaac-sar-eddy:main",
       volumes=[
-        k8s_models.V1Volume(
+        k8s.V1Volume(
             name="dshm",
             empty_dir=k8s.V1EmptyDirVolumeSource(medium="Memory", size_limit="2Gi") # Sets SHM to 2 GiB
         )
       ],
       volume_mounts=[
-        k8s_models.V1VolumeMount(
+        k8s.V1VolumeMount(
             name="dshm",
             mount_path="/dev/shm"
         )
