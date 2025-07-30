@@ -43,7 +43,11 @@ with DAG(
             mount_path="/dev/shm"
         )
       ],
-      image_pull_policy="Always",  
+      image_pull_policy="Always",
+      env_vars={
+            'OUTPUT_BUCKET_NAME': '{{ var.value.PROCESS_OUTPUTS }}'
+            'SAR_TASK_ID': '{{ ti.task_id }}'  # Set TASK_ID environment variable
+      },
       #cmds=["/bin/sh"],
       #arguments=["-c", "echo hello world"]
       # name="test-error-message",
