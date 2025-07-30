@@ -43,6 +43,7 @@ with DAG(
             mount_path="/dev/shm"
         )
       ],
+      image_pull_policy="Always",  
       #cmds=["/bin/sh"],
       #arguments=["-c", "echo hello world"]
       # name="test-error-message",
