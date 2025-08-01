@@ -1,0 +1,1 @@
+Environment within this DAG repo should match podaac-airflow/requirements.txt or podaac-airflow/Dockerfile installs. Only modules and libraries available in the Airflow containers will be available here. An alternative to this is to wrap all processes within Docker containers over which you have specific control.
