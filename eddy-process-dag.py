@@ -29,11 +29,7 @@ with DAG(
       dag_run_id = kwargs['dag_run'].run_id
 
       wkt = (
-      "POLYGON((-124.2334 41.9992,-124.1026 43.2497,-123.7835 46.2657,-132.5317"
-      " 46.5801,-142.5444 46.7398,-148.9479 46.8991,-169.5185 47.1824,-167.0575"
-      " 17.6285,-133.6955 18.1858,-116.8151 32.5449,-117.8871 33.7581,-122.1991"
-      " 37.0915,-122.7716 37.9991,-123.4172 38.9335,-123.539 39.8931,-124.3064"
-      " 40.3865,-123.8314 41.1061,-124.2334 41.9992))"
+      "POLYGON((-124.5751 41.8841,-124.1137 44.432,-137.6691 44.2286,-138.3284 27.9612,-114.224 28.2756,-117.8871 33.7581,-122.1991 37.0915,-124.3064 40.3865,-124.2235 41.2264,-124.5751 41.8841))"
       )
       results = asf.geo_search(
           platform=[asf.PLATFORM.SENTINEL1],
@@ -81,6 +77,16 @@ with DAG(
         )
       ],
       image_pull_policy="Always",
+      resources=k8s.V1ResourceRequirements(
+            requests={
+               "cpu": "8",
+               "memory": "32Gi", 
+            },  # Request 8 CPU cores, 32GB memory
+            limits={
+               "cpu": "12",
+               "memory": "48Gi"
+            },     # Limit to 12 CPU cores, 48GB memory
+        ),
       env_vars={
             'OUTPUT_BUCKET_NAME': '{{ var.value.PROCESS_OUTPUTS }}',
             'SEARCH_RESULTS_KEY': "{{ task_instance.xcom_pull(task_ids='asf_search_task', key='search_results') }}",
