@@ -62,16 +62,6 @@ with DAG(
 
     # Get step function input from JSON file
 
-    pod_resources = k8s.V1ResourceRequirements(
-            requests={
-               "cpu": "8",
-               "memory": "32Gi", 
-            },  # Request 8 CPU cores, 32GB memory
-            limits={
-               "cpu": "12",
-               "memory": "48Gi"
-            },     # Limit to 12 CPU cores, 48GB memory
-    )
     k = KubernetesPodOperator(
       task_id="test_sar_eddy_docker",
       image="ghcr.io/mike-gangl/podaac-sar-eddy:main",
@@ -93,7 +83,7 @@ with DAG(
             'SEARCH_RESULTS_KEY': "{{ task_instance.xcom_pull(task_ids='asf_search_task', key='search_results') }}",
             'SAR_TASK_ID': '{{ run_id }}'  # Set TASK_ID environment variable
       },
-      resources=pod_resources,
+      resources={"request_memory":"32Gi", "limit_memory":"48Gi"},
       #cmds=["/bin/sh"],
       #arguments=["-c", "echo hello world"]
       # name="test-error-message",
