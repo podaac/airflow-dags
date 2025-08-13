@@ -41,7 +41,7 @@ def swot_confluence_stepfunction():
 
     start = StepFunctionStartExecutionOperator(
         task_id="start_step_function",
-        state_machine_arn=f"arn:aws:states:us-west-2:{AWS_ACCOUNT_ID_SIT}:stateMachine:svc-confluence-sit-workflow-monitor-error",
+        state_machine_arn=f"arn:aws:states:us-west-2:{AWS_ACCOUNT_ID_SIT}:stateMachine:svc-confluence-sit-workflow",
         name="airflow-execution-{{ ts_nodash }}",
         state_machine_input=input_dict,
         deferrable=True,
