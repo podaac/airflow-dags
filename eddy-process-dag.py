@@ -96,6 +96,7 @@ with DAG(
             'AWS_DEFAULT_REGION': 'us-west-2'
       },
       container_resources=pod_resources,
+      log_events_on_failure=True,
       #cmds=["/bin/sh"],
       #arguments=["-c", "echo hello world"]
       # name="test-error-message",
