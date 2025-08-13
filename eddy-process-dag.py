@@ -92,7 +92,8 @@ with DAG(
       env_vars={
             'OUTPUT_BUCKET_NAME': '{{ var.value.PROCESS_OUTPUTS }}',
             'SEARCH_RESULTS_KEY': "{{ task_instance.xcom_pull(task_ids='asf_search_task', key='search_results') }}",
-            'SAR_TASK_ID': '{{ run_id }}'  # Set TASK_ID environment variable
+            'SAR_TASK_ID': '{{ run_id }}',  # Set TASK_ID environment variable
+            'AWS_DEFAULT_REGION': 'us-west-2'
       },
       container_resources=pod_resources,
       #cmds=["/bin/sh"],
