@@ -1,6 +1,6 @@
 import os
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from airflow.decorators import dag, task
 from airflow.providers.amazon.aws.operators.step_function import StepFunctionStartExecutionOperator, StepFunctionGetExecutionOutputOperator
@@ -45,6 +45,7 @@ def swot_confluence_stepfunction():
         name="airflow-execution-{{ ts_nodash }}",
         state_machine_input=input_dict,
         deferrable=True,
+        execution_timeout=timedelta(days=6)
     )
 
     get_output = StepFunctionGetExecutionOutputOperator(
