@@ -88,6 +88,7 @@ with DAG(
         )
       ],
       image_pull_policy="Always",
+      startup_timeout_seconds=300, # wait 5 minutes for an isntance to startup and have the pod available
       env_vars={
             'OUTPUT_BUCKET_NAME': '{{ var.value.PROCESS_OUTPUTS }}',
             'SEARCH_RESULTS_KEY': "{{ task_instance.xcom_pull(task_ids='asf_search_task', key='search_results') }}",
