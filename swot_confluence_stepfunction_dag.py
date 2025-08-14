@@ -5,6 +5,7 @@ from datetime import datetime, timezone, timedelta
 from airflow.decorators import dag, task
 from airflow.providers.amazon.aws.operators.step_function import StepFunctionStartExecutionOperator, StepFunctionGetExecutionOutputOperator
 from airflow.providers.amazon.aws.operators.batch import BatchOperator
+from airflow.providers.amazon.aws.sensors.step_function import StepFunctionExecutionSensor
 from step_function_input import StepFunctionInput
 
 AWS_ACCOUNT_ID_SIT = os.getenv("AWS_ACCOUNT_ID_SIT")
@@ -39,13 +40,19 @@ def swot_confluence_stepfunction():
 
     input_dict = prepare_input()
 
-    start = StepFunctionStartExecutionOperator(
+    start_execution = StepFunctionStartExecutionOperator(
         task_id="start_step_function",
         state_machine_arn=f"arn:aws:states:us-west-2:{AWS_ACCOUNT_ID_SIT}:stateMachine:svc-confluence-sit-workflow",
         name="airflow-execution-{{ ts_nodash }}",
         state_machine_input=input_dict,
-        deferrable=True,
-        execution_timeout=timedelta(days=6)
+    )
+
+    monitor_execution = StepFunctionExecutionSensor(
+        task_id="monitor_step_function",
+        execution_arn="{{ ti.xcom_pull(task_ids='start_step_function') }}",  # Pull ARN from XCom
+        mode="reschedule",            # Don't block a worker slot
+        poke_interval=600,            # Check every 10 minutes
+        timeout=6 * 24 * 60 * 60,      # 6 days
     )
 
     get_output = StepFunctionGetExecutionOutputOperator(
@@ -66,9 +73,8 @@ def swot_confluence_stepfunction():
                 "-s", "podaac-dev-swot-sos"
             ]
         },
-        #aws_conn_id='podaac-services-sit',
     )
 
-    input_dict >> start >> get_output >> publish_cnm >> update_input()
+    input_dict >> start_execution >> monitor_execution >> get_output >> publish_cnm >> update_input()
 
 dag = swot_confluence_stepfunction()
