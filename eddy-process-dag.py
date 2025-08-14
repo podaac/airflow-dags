@@ -18,6 +18,7 @@ with DAG(
     schedule_interval=None,
     start_date=datetime(2024, 1, 1),
     catchup=False,
+    params={'SSM_EDL_PASSWORD':'generate-edl-password', 'SSM_EDL_USERNAME':'generate-edl-username', 'START_DATE':'2019-01-01', 'END_DATE':'2019-01-10'},
     tags=["aws", "sar", "eddy", "data-production"],
 ) as dag:
 
@@ -41,8 +42,12 @@ with DAG(
           end=end,
       )
       with open('results.txt', 'a') as search_result_file:
+        search_result_file.write(f"defaults:\n")
+        search_result_file.write(f"  - default  # inherit hyp3/default.yaml\n\n")
+        search_result_file.write(f"granules::\n")
+
         for result in results:
-          search_result_file.write(f"{result.properties['sceneName']}\n")
+          search_result_file.write(f". - {result.properties['sceneName']}\n")
 
       #write output file to S3
       temp_bucket = Variable.get("PROCESS_OUTPUTS")
@@ -56,7 +61,7 @@ with DAG(
     asf_search_task = PythonOperator(
             task_id='asf_search_task',
             python_callable=asf_search,
-            op_args=[], # Positional arguments for the callable
+            op_args=["{{ params.START_DATE }}", "{{ params.END_DATE }}"], # Positional arguments for the callable
             provide_context=True
         )
 
@@ -93,7 +98,9 @@ with DAG(
             'OUTPUT_BUCKET_NAME': '{{ var.value.PROCESS_OUTPUTS }}',
             'SEARCH_RESULTS_KEY': "{{ task_instance.xcom_pull(task_ids='asf_search_task', key='search_results') }}",
             'SAR_TASK_ID': '{{ run_id }}',  # Set TASK_ID environment variable
-            'AWS_DEFAULT_REGION': 'us-west-2'
+            'AWS_DEFAULT_REGION': 'us-west-2',
+            'SSM_EDL_PASSWORD':   "{{params.SSM_EDL_PASSWORD}}",
+            'SSM_EDL_USERNAME' : "{{params.SSM_EDL_USERNAME}}"
       },
       container_resources=pod_resources,
       log_events_on_failure=True,
