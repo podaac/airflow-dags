@@ -11,7 +11,7 @@ STATE_MACHINE_ARN = f"arn:aws:states:us-west-2:{AWS_ACCOUNT_ID_SIT}:stateMachine
 with DAG(
     dag_id="swot_confluence_report_status_dag",
     start_date=datetime(2024, 1, 1),
-    schedule="*/5 * * * *",  # every 1 minute
+    schedule="*/5 * * * *",  # every 5 minutes
     catchup=False,
     tags=["aws", "stepfunction", "report"],
 ) as dag:
