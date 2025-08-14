@@ -44,7 +44,7 @@ with DAG(
       with open('results.txt', 'w') as search_result_file:
         search_result_file.write(f"defaults:\n")
         search_result_file.write(f"  - default  # inherit hyp3/default.yaml\n\n")
-        search_result_file.write(f"granules::\n")
+        search_result_file.write(f"granules:\n")
 
         for result in results:
           search_result_file.write(f"  - {result.properties['sceneName']}\n")
