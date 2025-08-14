@@ -41,7 +41,7 @@ with DAG(
           start=start,
           end=end,
       )
-      with open('results.txt', 'a') as search_result_file:
+      with open('results.txt', 'w') as search_result_file:
         search_result_file.write(f"defaults:\n")
         search_result_file.write(f"  - default  # inherit hyp3/default.yaml\n\n")
         search_result_file.write(f"granules::\n")
