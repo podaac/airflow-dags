@@ -47,7 +47,7 @@ with DAG(
         search_result_file.write(f"granules::\n")
 
         for result in results:
-          search_result_file.write(f". - {result.properties['sceneName']}\n")
+          search_result_file.write(f"  - {result.properties['sceneName']}\n")
 
       #write output file to S3
       temp_bucket = Variable.get("PROCESS_OUTPUTS")
