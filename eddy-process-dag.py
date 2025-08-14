@@ -69,13 +69,13 @@ with DAG(
 
     pod_resources = k8s.V1ResourceRequirements(
             requests={
-               "cpu": "8",
-               "memory": "32Gi", 
+               "cpu": "16",
+               "memory": "64Gi", 
                "ephemeral-storage": "200Gi"
             },  # Request 8 CPU cores, 32GB memory
             limits={
-               "cpu": "12",
-               "memory": "48Gi",
+               "cpu": "24",
+               "memory": "128Gi",
                "ephemeral-storage": "250Gi"
             },     # Limit to 12 CPU cores, 48GB memory
     )
