@@ -92,7 +92,7 @@ with DAG(
             )
         ]
     )
-    affinity = k8s.V1Affinity(node_affinity)
+    affinity = k8s.V1Affinity(node_affinity=node_affinity)
     
     k = KubernetesPodOperator(
       task_id="test_sar_eddy_docker",
