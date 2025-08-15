@@ -79,6 +79,20 @@ with DAG(
                "ephemeral-storage": "250Gi"
             },     # Limit to 12 CPU cores, 48GB memory
     )
+
+    node_affinity = k8s.V1NodeAffinity(
+        required_during_scheduling_ignored_during_execution=[
+            k8s.V1PreferredSchedulingTerm(
+                weight=1,
+                preference=k8s.V1NodeSelectorTerm(
+                    match_expressions=[
+                        k8s.V1NodeSelectorRequirement(key="karpenter.sh/capacity-type", operator="In", values=["on-demand"])
+                    ]
+                ),
+            )
+        ]
+    )
+    affinity = k8s.V1Affinity(node_affinity)
     
     k = KubernetesPodOperator(
       task_id="test_sar_eddy_docker",
@@ -105,6 +119,7 @@ with DAG(
             'SSM_EDL_PASSWORD':   "{{params.SSM_EDL_PASSWORD}}",
             'SSM_EDL_USERNAME' : "{{params.SSM_EDL_USERNAME}}"
       },
+      affinity=affinity,
       container_resources=pod_resources,
       log_events_on_failure=True,
       #cmds=["/bin/sh"],
