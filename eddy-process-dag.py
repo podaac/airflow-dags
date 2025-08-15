@@ -86,7 +86,7 @@ with DAG(
       volumes=[
         k8s.V1Volume(
             name="dshm",
-            empty_dir=k8s.V1EmptyDirVolumeSource(medium="Memory", size_limit="2Gi") # Sets SHM to 2 GiB
+            empty_dir=k8s.V1EmptyDirVolumeSource(medium="Memory", size_limit="8Gi") # Sets SHM to 8 GiB
         )
       ],
       volume_mounts=[
