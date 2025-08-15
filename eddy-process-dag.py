@@ -118,7 +118,8 @@ with DAG(
             'SAR_TASK_ID': '{{ run_id }}',  # Set TASK_ID environment variable
             'AWS_DEFAULT_REGION': 'us-west-2',
             'SSM_EDL_PASSWORD':   "{{params.SSM_EDL_PASSWORD}}",
-            'SSM_EDL_USERNAME' : "{{params.SSM_EDL_USERNAME}}"
+            'SSM_EDL_USERNAME' : "{{params.SSM_EDL_USERNAME}}",
+            'PYTHONUNBUFFERED' : "TRUE"
       },
       affinity=affinity,
       container_resources=pod_resources,
