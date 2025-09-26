@@ -69,14 +69,14 @@ with DAG(
 
     pod_resources = k8s.V1ResourceRequirements(
             requests={
-               "cpu": "16",
-               "memory": "64Gi", 
-               "ephemeral-storage": "200Gi"
+               "cpu": "8",
+               "memory": "8Gi", 
+               "ephemeral-storage": "20Gi"
             },  # Request 8 CPU cores, 32GB memory
             limits={
-               "cpu": "24",
-               "memory": "128Gi",
-               "ephemeral-storage": "250Gi"
+               "cpu": "12",
+               "memory": "16Gi",
+               "ephemeral-storage": "25Gi"
             },     # Limit to 12 CPU cores, 48GB memory
     )
 
@@ -124,7 +124,8 @@ with DAG(
       affinity=affinity,
       container_resources=pod_resources,
       log_events_on_failure=True,
-      #cmds=["/bin/sh"],
+      cmds=["/bin/sh", "-c"],
+      args=["sh run_hype.sh"],
       #arguments=["-c", "echo hello world"]
       # name="test-error-message",
       # email="airflow@example.com",
