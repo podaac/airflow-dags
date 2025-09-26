@@ -97,7 +97,7 @@ with DAG(
     
     k = KubernetesPodOperator(
       task_id="test_sar_eddy_docker",
-      image="ghcr.io/mike-gangl/podaac-sar-eddy:main",
+      image="ghcr.io/podaac/podaac-sar-eddy:main",
       volumes=[
         k8s.V1Volume(
             name="dshm",
