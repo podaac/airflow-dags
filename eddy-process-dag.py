@@ -125,7 +125,7 @@ with DAG(
       container_resources=pod_resources,
       log_events_on_failure=True,
       cmds=["/bin/sh", "-c"],
-      args=["sh run_hype.sh"],
+      args=["sh","run_hype.sh"],
       #arguments=["-c", "echo hello world"]
       # name="test-error-message",
       # email="airflow@example.com",
