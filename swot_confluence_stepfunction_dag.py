@@ -33,7 +33,7 @@ def swot_confluence_stepfunction():
     @task()
     def update_input():
         input_data = StepFunctionInput.from_s3("svc-confluence-sit")
-        #input_data.increment_version()
+        input_data.increment_version()
         #input_data.run_type = "unconstrained" if input_data.run_type == "constrained" else "constrained"
         input_data.save_to_s3("svc-confluence-sit")
         logging.info("✅ Step Function completed successfully and input updated.")
