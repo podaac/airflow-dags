@@ -172,14 +172,6 @@ with DAG(
                         {
                             'name': 'SSM_EDL_USERNAME',
                             'value': "{{params.SSM_EDL_USERNAME}}"
-                        },
-                        {
-                            'name': 'START_DATE',
-                            'value': "{{params.START_DATE or ''}}"
-                        },
-                        {
-                            'name': 'END_DATE',
-                            'value': "{{params.END_DATE or ''}}"
                         }
                     ]
                 },
