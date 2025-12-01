@@ -36,7 +36,7 @@ from airflow.providers.amazon.aws.operators.ecs import (
 from airflow.providers.amazon.aws.sensors.ecs import (
     EcsTaskStateSensor
 )
-from airflow.operators.python import PythonOperator, BranchPythonOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator, ShortCircuitOperator
 from airflow.exceptions import AirflowSkipException
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.sensors.time_delta import TimeDeltaSensor
@@ -47,6 +47,16 @@ cluster_subnets = ["subnet-04fb3675968744380",
                    "subnet-0adee3417fedb7f05", "subnet-0d15606f25bd4047b"]
 default_sg = os.environ.get("SECURITY_GROUP_ID", "sg-09e578df0adec589e")
 
+
+def should_wait_after_dummy_task(**context):
+    """Check if dummy_ecs_task was skipped, if so skip the wait"""
+    dag_run = context['dag_run']
+    ti = dag_run.get_task_instance('no_ec2_instances')
+    # Return False to short-circuit (skip downstream) if dummy_ecs_task was skipped
+    # Return True to continue if dummy_ecs_task ran (succeeded or failed)
+    if ti and ti.state == 'skipped':
+        return False
+    return True
 
 def has_ec2_instances_in_cluster(**context):
     ecs_client = boto3.client('ecs')
@@ -165,11 +175,11 @@ with DAG(
                         },
                         {
                             'name': 'START_DATE',
-                            'value': "{{params.START_DATE}}"
+                            'value': "{{params.START_DATE or ''}}"
                         },
                         {
                             'name': 'END_DATE',
-                            'value': "{{params.END_DATE}}"
+                            'value': "{{params.END_DATE or ''}}"
                         }
                     ]
                 },
@@ -187,11 +197,17 @@ with DAG(
         trigger_rule=TriggerRule.ALL_DONE,
     )
 
-    sleep_5min = TimeDeltaSensor(
-        task_id='wait_5_minutes',
-        delta=timedelta(minutes=5),
+    check_should_wait = ShortCircuitOperator(
+        task_id='check_should_wait',
+        python_callable=should_wait_after_dummy_task,
+        provide_context=True,
         trigger_rule=TriggerRule.ALL_DONE,
     )
 
+    sleep_5min = TimeDeltaSensor(
+        task_id='wait_5_minutes',
+        delta=timedelta(minutes=5),
+    )
+
     check_ec2 >> run_task
-    check_ec2 >> dummy_ecs_task >> sleep_5min >> run_task
+    check_ec2 >> dummy_ecs_task >> check_should_wait >> sleep_5min >> run_task
