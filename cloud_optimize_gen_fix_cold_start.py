@@ -49,11 +49,12 @@ default_sg = os.environ.get("SECURITY_GROUP_ID", "sg-09e578df0adec589e")
 
 
 def should_wait_after_dummy_task(**context):
-    """Check if dummy_ecs_task was skipped, if so skip the wait"""
+    """Check if dummy_ecs_task was skipped, if so skip the wait and go directly to run_task"""
     dag_run = context['dag_run']
     ti = dag_run.get_task_instance('no_ec2_instances')
-    # Return False to short-circuit (skip downstream) if dummy_ecs_task was skipped
-    # Return True to continue if dummy_ecs_task ran (succeeded or failed)
+    # Return False to short-circuit (skip sleep_5min) if dummy_ecs_task was skipped
+    # This allows run_task to run via the direct path (check_ec2 >> run_task)
+    # Return True to continue (run sleep_5min) if dummy_ecs_task ran (succeeded or failed)
     if ti and ti.state == 'skipped':
         return False
     return True
@@ -172,6 +173,14 @@ with DAG(
                         {
                             'name': 'SSM_EDL_USERNAME',
                             'value': "{{params.SSM_EDL_USERNAME}}"
+                        },
+                        {
+                            'name': 'START_DATE',
+                            'value': "{{params.START_DATE or ''}}"
+                        },
+                        {
+                            'name': 'END_DATE',
+                            'value': "{{params.END_DATE or ''}}"
                         }
                     ]
                 },
