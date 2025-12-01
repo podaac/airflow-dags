@@ -121,50 +121,49 @@ with DAG(
         task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task",
         capacity_provider_strategy=[{"capacityProvider":"service-virtualzarr-gen-sit-ecs-capacity-provider"}],
         overrides={
-        "containerOverrides": [
-            {
-                "name": "cloud-optimization-generation",
-                "environment":[
-			            {
-                        	'name': 'COLLECTION',
-                        	'value': "{{params.collection_id}}"
-                    	},
-                        {
-                            'name': 'LOADABLE_VARS',
-                            'value': "{{params.loadable_coordinate_variables}}"
-                        },
-                        {
-                            'name': 'OUTPUT_BUCKET',
-                            'value': "{{params.output_bucket}}"
-                        },
-                        {
-                            'name': 'SSM_EDL_PASSWORD',
-                            'value': "{{params.SSM_EDL_PASSWORD}}"
-                        },
-                        {
-                            'name': 'SSM_EDL_USERNAME',
-                            'value': "{{params.SSM_EDL_USERNAME}}"
-                        },
-                        {
-                            'name': 'START_DATE',
-                            'value': "{{params.START_DATE}}"
-                        },
-                        {
-                            'name': 'END_DATE',
-                            'value': "{{params.END_DATE}}"
-                        }
-		]
-        #        #"command": ["echo hello world"],
-            },
-        ],
+            "containerOverrides": [
+                {
+                    "name": "cloud-optimization-generation",
+                    "environment":[
+                            {
+                                'name': 'COLLECTION',
+                                'value': "{{params.collection_id}}"
+                            },
+                            {
+                                'name': 'LOADABLE_VARS',
+                                'value': "{{params.loadable_coordinate_variables}}"
+                            },
+                            {
+                                'name': 'OUTPUT_BUCKET',
+                                'value': "{{params.output_bucket}}"
+                            },
+                            {
+                                'name': 'SSM_EDL_PASSWORD',
+                                'value': "{{params.SSM_EDL_PASSWORD}}"
+                            },
+                            {
+                                'name': 'SSM_EDL_USERNAME',
+                                'value': "{{params.SSM_EDL_USERNAME}}"
+                            },
+                            {
+                                'name': 'START_DATE',
+                                'value': "{{params.START_DATE}}"
+                            },
+                            {
+                                'name': 'END_DATE',
+                                'value': "{{params.END_DATE}}"
+                            }
+                    ]
+                },
+            ],
         },
-	#wait_for_completion=False,
-	network_configuration={
+    #wait_for_completion=False,
+    network_configuration={
           "awsvpcConfiguration": {
               "securityGroups": [default_sg],
               "subnets": cluster_subnets,
           },
-	},
+    },
         # [START howto_awslogs_ecs]
         #awslogs_group=log_group_name,
         #awslogs_region=aws_region,
