@@ -143,34 +143,34 @@ with DAG(
                 {
                     "name": "cloud-optimization-generation",
                     "environment": [
-                            {
-                                'name': 'COLLECTION',
-                                'value': "{{params.collection_id}}"
-                            },
                         {
-                                'name': 'LOADABLE_VARS',
-                                'value': "{{params.loadable_coordinate_variables}}"
-                            },
+                            'name': 'COLLECTION',
+                            'value': "{{params.collection_id}}"
+                        },
                         {
-                                'name': 'OUTPUT_BUCKET',
-                                'value': "{{params.output_bucket}}"
-                            },
+                            'name': 'LOADABLE_VARS',
+                            'value': "{{params.loadable_coordinate_variables}}"
+                        },
                         {
-                                'name': 'SSM_EDL_PASSWORD',
-                                'value': "{{params.SSM_EDL_PASSWORD}}"
-                            },
+                            'name': 'OUTPUT_BUCKET',
+                            'value': "{{params.output_bucket}}"
+                        },
                         {
-                                'name': 'SSM_EDL_USERNAME',
-                                'value': "{{params.SSM_EDL_USERNAME}}"
-                            },
+                            'name': 'SSM_EDL_PASSWORD',
+                            'value': "{{params.SSM_EDL_PASSWORD}}"
+                        },
                         {
-                                'name': 'START_DATE',
-                                'value': "{{params.START_DATE}}"
-                            },
+                            'name': 'SSM_EDL_USERNAME',
+                            'value': "{{params.SSM_EDL_USERNAME}}"
+                        },
                         {
-                                'name': 'END_DATE',
-                                'value': "{{params.END_DATE}}"
-                            }
+                            'name': 'START_DATE',
+                            'value': "{{params.START_DATE}}"
+                        },
+                        {
+                            'name': 'END_DATE',
+                            'value': "{{params.END_DATE}}"
+                        }
                     ]
                 },
             ],
