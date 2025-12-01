@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone, timedelta
-from datetime import datetime
 
 import boto3
 import os
@@ -44,8 +43,10 @@ from airflow.sensors.time_delta import TimeDeltaSensor
 
 venue = os.environ.get("VENUE", "SIT").lower()
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
-cluster_subnets = ["subnet-04fb3675968744380","subnet-0adee3417fedb7f05","subnet-0d15606f25bd4047b"]
-default_sg = os.environ.get("SECURITY_GROUP_ID", "sg-09e578df0adec589e") 
+cluster_subnets = ["subnet-04fb3675968744380",
+                   "subnet-0adee3417fedb7f05", "subnet-0d15606f25bd4047b"]
+default_sg = os.environ.get("SECURITY_GROUP_ID", "sg-09e578df0adec589e")
+
 
 def has_ec2_instances_in_cluster(**context):
     ecs_client = boto3.client('ecs')
@@ -54,13 +55,15 @@ def has_ec2_instances_in_cluster(**context):
     container_instance_arns = response.get('containerInstanceArns', [])
     if not container_instance_arns:
         return 'no_ec2_instances'
-    desc = ecs_client.describe_container_instances(cluster=cluster_name, containerInstances=container_instance_arns)
-    ec2_instance_ids = [ci['ec2InstanceId'] for ci in desc['containerInstances'] if 'ec2InstanceId' in ci]
+    desc = ecs_client.describe_container_instances(
+        cluster=cluster_name, containerInstances=container_instance_arns)
+    ec2_instance_ids = [ci['ec2InstanceId']
+                        for ci in desc['containerInstances'] if 'ec2InstanceId' in ci]
     if not ec2_instance_ids:
         return 'no_ec2_instances'
     ec2_desc = ec2_client.describe_instances(InstanceIds=ec2_instance_ids)
     now = datetime.now(timezone.utc)
-    
+
     # Count instances that are running and have been up for 5+ minutes
     ready_instance_count = 0
     for reservation in ec2_desc['Reservations']:
@@ -69,23 +72,25 @@ def has_ec2_instances_in_cluster(**context):
             state = instance['State']['Name']
             launch_time = instance['LaunchTime']
             age = now - launch_time
-            
+
             # Check if instance is running and has been up for at least 5 minutes
             if state == 'running' and age >= timedelta(minutes=5):
                 ready_instance_count += 1
-    
+
     # Need more than 1 instance running for 5+ minutes
     if ready_instance_count > 1:
         return 'run_task'
     else:
         return 'no_ec2_instances'
 
+
 with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator_cold_start",
     schedule=None,
     start_date=datetime(2021, 1, 1),
     tags=["aws", "ecs", "cloud-optimized"],
-    params={'collection_id': 'default_value', 'loadable_coordinate_variables': 'lat,lon,time', 'output_bucket':'podaac-sit-services-cloud-optimizer', 'SSM_EDL_PASSWORD':'generate-edl-password', 'SSM_EDL_USERNAME':'generate-edl-username', 'START_DATE':'', 'END_DATE':''},
+    params={'collection_id': 'default_value', 'loadable_coordinate_variables': 'lat,lon,time', 'output_bucket': 'podaac-sit-services-cloud-optimizer',
+            'SSM_EDL_PASSWORD': 'generate-edl-password', 'SSM_EDL_USERNAME': 'generate-edl-username', 'START_DATE': '', 'END_DATE': ''},
     catchup=False,
 ) as dag:
 
@@ -100,7 +105,8 @@ with DAG(
         cluster=cluster_name,
         deferrable=True,
         task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task",
-        capacity_provider_strategy=[{"capacityProvider":"service-virtualzarr-gen-sit-ecs-capacity-provider"}],
+        capacity_provider_strategy=[
+            {"capacityProvider": "service-virtualzarr-gen-sit-ecs-capacity-provider"}],
         overrides={
             "containerOverrides": [
                 {
@@ -130,37 +136,38 @@ with DAG(
         cluster=cluster_name,
         deferrable=True,
         task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task",
-        capacity_provider_strategy=[{"capacityProvider":"service-virtualzarr-gen-sit-ecs-capacity-provider"}],
+        capacity_provider_strategy=[
+            {"capacityProvider": "service-virtualzarr-gen-sit-ecs-capacity-provider"}],
         overrides={
             "containerOverrides": [
                 {
                     "name": "cloud-optimization-generation",
-                    "environment":[
+                    "environment": [
                             {
                                 'name': 'COLLECTION',
                                 'value': "{{params.collection_id}}"
                             },
-                            {
+                        {
                                 'name': 'LOADABLE_VARS',
                                 'value': "{{params.loadable_coordinate_variables}}"
                             },
-                            {
+                        {
                                 'name': 'OUTPUT_BUCKET',
                                 'value': "{{params.output_bucket}}"
                             },
-                            {
+                        {
                                 'name': 'SSM_EDL_PASSWORD',
                                 'value': "{{params.SSM_EDL_PASSWORD}}"
                             },
-                            {
+                        {
                                 'name': 'SSM_EDL_USERNAME',
                                 'value': "{{params.SSM_EDL_USERNAME}}"
                             },
-                            {
+                        {
                                 'name': 'START_DATE',
                                 'value': "{{params.START_DATE}}"
                             },
-                            {
+                        {
                                 'name': 'END_DATE',
                                 'value': "{{params.END_DATE}}"
                             }
@@ -179,7 +186,6 @@ with DAG(
         container_name="cloud-optimization-generation",
         trigger_rule=TriggerRule.ALL_DONE,
     )
-
 
     sleep_5min = TimeDeltaSensor(
         task_id='wait_5_minutes',
