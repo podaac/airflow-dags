@@ -60,12 +60,25 @@ def has_ec2_instances_in_cluster(**context):
         return 'no_ec2_instances'
     ec2_desc = ec2_client.describe_instances(InstanceIds=ec2_instance_ids)
     now = datetime.now(timezone.utc)
+    
+    # Count instances that are running and have been up for 5+ minutes
+    ready_instance_count = 0
     for reservation in ec2_desc['Reservations']:
         for instance in reservation['Instances']:
+            instance_id = instance['InstanceId']
+            state = instance['State']['Name']
             launch_time = instance['LaunchTime']
-            if (now - launch_time) < timedelta(minutes=5):
-                return 'no_ec2_instances'
-    return 'run_task'
+            age = now - launch_time
+            
+            # Check if instance is running and has been up for at least 5 minutes
+            if state == 'running' and age >= timedelta(minutes=5):
+                ready_instance_count += 1
+    
+    # Need more than 1 instance running for 5+ minutes
+    if ready_instance_count > 1:
+        return 'run_task'
+    else:
+        return 'no_ec2_instances'
 
 with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator_cold_start",
@@ -112,8 +125,6 @@ with DAG(
         container_name="cloud-optimization-generation",
     )
 
-  # We need to set container name here as it will not be returned if the status is provisioning (sometimes?).
-  # https://github.com/apache/airflow/issues/51429
     run_task = EcsRunTaskOperator(
         task_id="run_task",
         cluster=cluster_name,
@@ -157,34 +168,23 @@ with DAG(
                 },
             ],
         },
-    #wait_for_completion=False,
-    network_configuration={
-          "awsvpcConfiguration": {
-              "securityGroups": [default_sg],
-              "subnets": cluster_subnets,
-          },
-    },
-        # [START howto_awslogs_ecs]
-        #awslogs_group=log_group_name,
-        #awslogs_region=aws_region,
-        #awslogs_stream_prefix=f"ecs/{container_name}",
-        # [END howto_awslogs_ecs]
-        container_name="cloud-optimization-generation",
-    )
-  # Use the sensor below to monitor job	
-  #run_task.wait_for_completion = False
 
-  # await_task_finish = EcsTaskStateSensor(
-  #       task_id="await_task_finish",
-  #       cluster=cluster_name,
-  #       task=run_task.output["ecs_task_arn"],
-  #       target_state=EcsTaskStates.STOPPED,
-  #       failure_states={EcsTaskStates.NONE},
-  # )
+        network_configuration={
+            "awsvpcConfiguration": {
+                "securityGroups": [default_sg],
+                "subnets": cluster_subnets,
+            },
+        },
+
+        container_name="cloud-optimization-generation",
+        trigger_rule=TriggerRule.ALL_DONE,
+    )
+
 
     sleep_5min = TimeDeltaSensor(
         task_id='wait_5_minutes',
         delta=timedelta(minutes=5),
+        trigger_rule=TriggerRule.ALL_DONE,
     )
 
     check_ec2 >> run_task
