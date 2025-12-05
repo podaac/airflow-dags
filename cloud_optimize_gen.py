@@ -97,15 +97,15 @@ with DAG(
                         },
                         {
                                 'name': 'CPU_COUNT',
-                                'value': "{{params.SSM_EDL_USERNAME}}"
+                                'value': "{{params.CPU_COUNT}}"
                         },
                         {
                                 'name': 'MEMORY_LIMIT',
-                                'value': "{{params.SSM_EDL_USERNAME}}"
+                                'value': "{{params.MEMORY_LIMIT}}"
                         },
                         {
                                 'name': 'BATCH_SIZE',
-                                'value': "{{params.SSM_EDL_USERNAME}}"                 
+                                'value': "{{params.BATCH_SIZE}}"                 
                         }
 		]
         #        #"command": ["echo hello world"],
