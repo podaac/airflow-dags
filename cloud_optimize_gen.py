@@ -48,7 +48,17 @@ with DAG(
     schedule=None,
     start_date=datetime(2021, 1, 1),
     tags=["aws", "ecs", "cloud-optimized"],
-    params={'collection_id': 'default_value', 'loadable_coordinate_variables': 'lat,lon,time', 'output_bucket':'podaac-sit-services-cloud-optimizer', 'SSM_EDL_PASSWORD':'generate-edl-password', 'SSM_EDL_USERNAME':'generate-edl-username', 'START_DATE':'', 'END_DATE':''},
+    params={
+        'collection_id': 'default_value',
+        'loadable_coordinate_variables': 'lat,lon,time',
+        'output_bucket':'podaac-sit-services-cloud-optimizer',
+        'SSM_EDL_PASSWORD':'generate-edl-password',
+        'SSM_EDL_USERNAME':'generate-edl-username', 
+        'START_DATE':'', 'END_DATE':'',
+        'CPU_COUNT': '16',
+        'MEMORY_LIMIT': '12GB',
+        'BATCH_SIZE': '48'
+    },
     catchup=False,
 ) as dag:
 
@@ -84,6 +94,18 @@ with DAG(
                         {
                                 'name': 'SSM_EDL_USERNAME',
                                 'value': "{{params.SSM_EDL_USERNAME}}"
+                        },
+                        {
+                                'name': 'CPU_COUNT',
+                                'value': "{{params.SSM_EDL_USERNAME}}"
+                        },
+                        {
+                                'name': 'MEMORY_LIMIT',
+                                'value': "{{params.SSM_EDL_USERNAME}}"
+                        },
+                        {
+                                'name': 'BATCH_SIZE',
+                                'value': "{{params.SSM_EDL_USERNAME}}"                 
                         }
 		]
         #        #"command": ["echo hello world"],
