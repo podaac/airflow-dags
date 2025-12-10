@@ -107,7 +107,7 @@ with DAG(
                         {
                             'name': 'BATCH_SIZE',
                             'value': "{{params.BATCH_SIZE}}"                 
-                        }
+                        },
                         {
                             'name': 'START_DATE',
                             'value': "{{params.START_DATE}}"                 
