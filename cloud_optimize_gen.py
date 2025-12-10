@@ -40,8 +40,9 @@ from airflow.utils.trigger_rule import TriggerRule
 
 venue = os.environ.get("VENUE", "SIT").lower()
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
-cluster_subnets = ["subnet-04fb3675968744380","subnet-0adee3417fedb7f05","subnet-0d15606f25bd4047b"]
-default_sg = os.environ.get("SECURITY_GROUP_ID", "sg-09e578df0adec589e") 
+cluster_subnets = ["subnet-04fb3675968744380",
+                   "subnet-0adee3417fedb7f05", "subnet-0d15606f25bd4047b"]
+default_sg = os.environ.get("SECURITY_GROUP_ID", "sg-09e578df0adec589e")
 
 with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator",
@@ -51,11 +52,11 @@ with DAG(
     params={
         'collection_id': 'default_value',
         'loadable_coordinate_variables': 'lat,lon,time',
-        'output_bucket':'podaac-sit-services-cloud-optimizer',
-        'SSM_EDL_PASSWORD':'generate-edl-password',
-        'SSM_EDL_USERNAME':'generate-edl-username', 
-        'START_DATE':'',
-        'END_DATE':'',
+        'output_bucket': 'podaac-sit-services-cloud-optimizer',
+        'SSM_EDL_PASSWORD': 'generate-edl-password',
+        'SSM_EDL_USERNAME': 'generate-edl-username',
+        'START_DATE': '',
+        'END_DATE': '',
         'CPU_COUNT': '16',
         'MEMORY_LIMIT': '12GB',
         'BATCH_SIZE': '48'
@@ -63,87 +64,87 @@ with DAG(
     catchup=False,
 ) as dag:
 
-  # We need to set container name here as it will not be returned if the status is provisioning (sometimes?).
-  # https://github.com/apache/airflow/issues/51429
-  run_task = EcsRunTaskOperator(
+    # We need to set container name here as it will not be returned if the status is provisioning (sometimes?).
+    # https://github.com/apache/airflow/issues/51429
+    run_task = EcsRunTaskOperator(
         task_id="run_task",
         cluster=cluster_name,
         deferrable=True,
         task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task",
-        capacity_provider_strategy=[{"capacityProvider":"service-virtualzarr-gen-sit-ecs-capacity-provider"}],
+        capacity_provider_strategy=[
+            {"capacityProvider": "service-virtualzarr-gen-sit-ecs-capacity-provider"}],
         overrides={
-        "containerOverrides": [
-            {
-                "name": "cloud-optimization-generation",
-                "environment":[
-			            {
-                        	'name': 'COLLECTION',
-                        	'value': "{{params.collection_id}}"
-                    	},
+            "containerOverrides": [
+              {
+                  "name": "cloud-optimization-generation",
+                  "environment": [
                         {
-                            'name': 'LOADABLE_VARS',
-                            'value': "{{params.loadable_coordinate_variables}}"
+                          'name': 'COLLECTION',
+                          'value': "{{params.collection_id}}"
                         },
                         {
-                            'name': 'OUTPUT_BUCKET',
-                            'value': "{{params.output_bucket}}"
+                          'name': 'LOADABLE_VARS',
+                          'value': "{{params.loadable_coordinate_variables}}"
                         },
                         {
-                            'name': 'SSM_EDL_PASSWORD',
-                            'value': "{{params.SSM_EDL_PASSWORD}}"
+                          'name': 'OUTPUT_BUCKET',
+                          'value': "{{params.output_bucket}}"
                         },
                         {
-                            'name': 'SSM_EDL_USERNAME',
-                            'value': "{{params.SSM_EDL_USERNAME}}"
+                          'name': 'SSM_EDL_PASSWORD',
+                          'value': "{{params.SSM_EDL_PASSWORD}}"
                         },
                         {
-                            'name': 'CPU_COUNT',
-                            'value': "{{params.CPU_COUNT}}"
+                          'name': 'SSM_EDL_USERNAME',
+                          'value': "{{params.SSM_EDL_USERNAME}}"
                         },
                         {
-                            'name': 'MEMORY_LIMIT',
-                            'value': "{{params.MEMORY_LIMIT}}"
+                          'name': 'CPU_COUNT',
+                          'value': "{{params.CPU_COUNT}}"
                         },
                         {
-                            'name': 'BATCH_SIZE',
-                            'value': "{{params.BATCH_SIZE}}"                 
+                          'name': 'MEMORY_LIMIT',
+                          'value': "{{params.MEMORY_LIMIT}}"
                         },
                         {
-                            'name': 'START_DATE',
-                            'value': "{{params.START_DATE}}"                 
+                          'name': 'BATCH_SIZE',
+                          'value': "{{params.BATCH_SIZE}}"
                         },
                         {
-                            'name': 'END_DATE',
-                            'value': "{{params.END_DATE}}"                 
+                          'name': 'START_DATE',
+                          'value': "{{params.START_DATE}}"
+                        },
+                        {
+                          'name': 'END_DATE',
+                          'value': "{{params.END_DATE}}"
                         }
-		]
-        #        #"command": ["echo hello world"],
-            },
-        ],
+                    ]
+                }
+            ]
         },
-	#wait_for_completion=False,
-	network_configuration={
-          "awsvpcConfiguration": {
-              "securityGroups": [default_sg],
-              "subnets": cluster_subnets,
-          },
-	},
+        # wait_for_completion=False,
+        network_configuration={
+            "awsvpcConfiguration": {
+                "securityGroups": [default_sg],
+                "subnets": cluster_subnets,
+            },
+        },
         # [START howto_awslogs_ecs]
-        #awslogs_group=log_group_name,
-        #awslogs_region=aws_region,
-        #awslogs_stream_prefix=f"ecs/{container_name}",
+        # awslogs_group=log_group_name,
+        # awslogs_region=aws_region,
+        # awslogs_stream_prefix=f"ecs/{container_name}",
         # [END howto_awslogs_ecs]
         container_name="cloud-optimization-generation",
     )
-  # Use the sensor below to monitor job	
-  #run_task.wait_for_completion = False
+    # Use the sensor below to monitor job
+    #run_task.wait_for_completion = False
 
-  # await_task_finish = EcsTaskStateSensor(
-  #       task_id="await_task_finish",
-  #       cluster=cluster_name,
-  #       task=run_task.output["ecs_task_arn"],
-  #       target_state=EcsTaskStates.STOPPED,
-  #       failure_states={EcsTaskStates.NONE},
-  # )
+    # await_task_finish = EcsTaskStateSensor(
+    #       task_id="await_task_finish",
+    #       cluster=cluster_name,
+    #       task=run_task.output["ecs_task_arn"],
+    #       target_state=EcsTaskStates.STOPPED,
+    #       failure_states={EcsTaskStates.NONE},
+    # )
 
-  run_task  #>> await_task_finish
+    run_task  # >> await_task_finish
