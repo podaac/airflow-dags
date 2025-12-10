@@ -54,7 +54,8 @@ with DAG(
         'output_bucket':'podaac-sit-services-cloud-optimizer',
         'SSM_EDL_PASSWORD':'generate-edl-password',
         'SSM_EDL_USERNAME':'generate-edl-username', 
-        'START_DATE':'', 'END_DATE':'',
+        'START_DATE':'',
+        'END_DATE':'',
         'CPU_COUNT': '16',
         'MEMORY_LIMIT': '12GB',
         'BATCH_SIZE': '48'
@@ -75,37 +76,45 @@ with DAG(
             {
                 "name": "cloud-optimization-generation",
                 "environment":[
-			{
+			            {
                         	'name': 'COLLECTION',
                         	'value': "{{params.collection_id}}"
                     	},
                         {
-                                'name': 'LOADABLE_VARS',
-                                'value': "{{params.loadable_coordinate_variables}}"
+                            'name': 'LOADABLE_VARS',
+                            'value': "{{params.loadable_coordinate_variables}}"
                         },
                         {
-                                'name': 'OUTPUT_BUCKET',
-                                'value': "{{params.output_bucket}}"
+                            'name': 'OUTPUT_BUCKET',
+                            'value': "{{params.output_bucket}}"
                         },
                         {
-                                'name': 'SSM_EDL_PASSWORD',
-                                'value': "{{params.SSM_EDL_PASSWORD}}"
+                            'name': 'SSM_EDL_PASSWORD',
+                            'value': "{{params.SSM_EDL_PASSWORD}}"
                         },
                         {
-                                'name': 'SSM_EDL_USERNAME',
-                                'value': "{{params.SSM_EDL_USERNAME}}"
+                            'name': 'SSM_EDL_USERNAME',
+                            'value': "{{params.SSM_EDL_USERNAME}}"
                         },
                         {
-                                'name': 'CPU_COUNT',
-                                'value': "{{params.CPU_COUNT}}"
+                            'name': 'CPU_COUNT',
+                            'value': "{{params.CPU_COUNT}}"
                         },
                         {
-                                'name': 'MEMORY_LIMIT',
-                                'value': "{{params.MEMORY_LIMIT}}"
+                            'name': 'MEMORY_LIMIT',
+                            'value': "{{params.MEMORY_LIMIT}}"
                         },
                         {
-                                'name': 'BATCH_SIZE',
-                                'value': "{{params.BATCH_SIZE}}"                 
+                            'name': 'BATCH_SIZE',
+                            'value': "{{params.BATCH_SIZE}}"                 
+                        }
+                        {
+                            'name': 'START_DATE',
+                            'value': "{{params.START_DATE}}"                 
+                        },
+                        {
+                            'name': 'END_DATE',
+                            'value': "{{params.END_DATE}}"                 
                         }
 		]
         #        #"command": ["echo hello world"],
