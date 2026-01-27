@@ -23,6 +23,7 @@ import os
 from airflow.decorators import task
 from airflow.models.baseoperator import chain
 from airflow.models.dag import DAG
+from airflow.models import Variable
 from airflow.providers.amazon.aws.hooks.ecs import EcsClusterStates
 from airflow.providers.amazon.aws.hooks.ecs import EcsTaskStates
 
@@ -38,10 +39,10 @@ from airflow.providers.amazon.aws.sensors.ecs import (
 )
 from airflow.utils.trigger_rule import TriggerRule
 
+aws_account_id = os.getenv("AWS_ACCOUNT_ID")
 venue = os.environ.get("VENUE", "SIT").lower()
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
-cluster_subnets = ["subnet-04fb3675968744380",
-                   "subnet-0adee3417fedb7f05", "subnet-0d15606f25bd4047b"]
+cluster_subnets = Variable.get("cluster_subnets", deserialize_json=True)
 default_sg = os.environ.get("SECURITY_GROUP_ID", "sg-09e578df0adec589e")
 
 with DAG(
@@ -52,14 +53,14 @@ with DAG(
     params={
         'collection_id': 'default_value',
         'loadable_coordinate_variables': 'lat,lon,time',
-        'output_bucket': 'podaac-sit-services-cloud-optimizer',
+        'output_bucket': f'podaac-{venue}-services-cloud-optimizer',
         'SSM_EDL_PASSWORD': 'generate-edl-password',
         'SSM_EDL_USERNAME': 'generate-edl-username',
         'START_DATE': '',
         'END_DATE': '',
-        'CPU_COUNT': '16',
-        'MEMORY_LIMIT': '12GB',
-        'BATCH_SIZE': '48'
+        'CPU_COUNT': '96',
+        'MEMORY_LIMIT': '6GB',
+        'BATCH_SIZE': '96'
     },
     catchup=False,
 ) as dag:
@@ -70,9 +71,9 @@ with DAG(
         task_id="run_task",
         cluster=cluster_name,
         deferrable=True,
-        task_definition="arn:aws:ecs:us-west-2:206226843404:task-definition/service-virtualzarr-gen-sit-app-task",
+        task_definition=f"arn:aws:ecs:us-west-2:{aws_account_id}:task-definition/service-virtualzarr-gen-{venue}-app-task",
         capacity_provider_strategy=[
-            {"capacityProvider": "service-virtualzarr-gen-sit-ecs-capacity-provider"}],
+            {"capacityProvider": f"service-virtualzarr-gen-{venue}-ecs-capacity-provider"}],
         overrides={
             "containerOverrides": [
               {
