@@ -43,7 +43,7 @@ aws_account_id = os.getenv("AWS_ACCOUNT_ID")
 venue = os.environ.get("VENUE", "SIT").lower()
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
 cluster_subnets = Variable.get("cluster_subnets", deserialize_json=True)
-default_sg = os.environ.get("SECURITY_GROUP_ID", "sg-09e578df0adec589e")
+default_sg = Variable.get("security_group_id")
 
 with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator",
