@@ -61,7 +61,7 @@ with DAG(
         'CPU_COUNT': '96',
         'MEMORY_LIMIT': '6GB',
         'BATCH_SIZE': '96',
-        'staging_bucket': '',
+        'staging_bucket': ''
     },
     catchup=False,
 ) as dag:
