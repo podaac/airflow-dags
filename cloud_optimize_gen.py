@@ -123,7 +123,7 @@ with DAG(
                         {
                           'name': 'STAGING_BUCKET',
                           'value': "{{params.staging_bucket}}"
-                        },
+                        }
                     ]
                 }
             ]
