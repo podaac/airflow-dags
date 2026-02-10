@@ -60,7 +60,8 @@ with DAG(
         'END_DATE': '',
         'CPU_COUNT': '96',
         'MEMORY_LIMIT': '6GB',
-        'BATCH_SIZE': '96'
+        'BATCH_SIZE': '96',
+        'staging_bucket': '',
     },
     catchup=False,
 ) as dag:
@@ -118,7 +119,11 @@ with DAG(
                         {
                           'name': 'END_DATE',
                           'value': "{{params.END_DATE}}"
-                        }
+                        },
+                        {
+                          'name': 'STAGING_BUCKET',
+                          'value': "{{params.staging_bucket}}"
+                        },
                     ]
                 }
             ]
