@@ -20,19 +20,9 @@ from datetime import datetime
 
 import boto3
 import os
-from airflow.decorators import task
-from airflow.models.baseoperator import chain
 from airflow.models.dag import DAG
-from airflow.models import Variable
-from airflow.providers.amazon.aws.hooks.ecs import EcsClusterStates
-from airflow.providers.amazon.aws.hooks.ecs import EcsTaskStates
 from airflow.providers.amazon.aws.operators.lambda_function import AwsLambdaInvokeFunctionOperator
 
-aws_account_id = os.getenv("AWS_ACCOUNT_ID")
-venue = os.environ.get("VENUE", "SIT").lower()
-cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
-cluster_subnets = Variable.get("cluster_subnets", deserialize_json=True)
-default_sg = Variable.get("security_group_id")
 
 with DAG(
     dag_id="vds_bucket_sync",
