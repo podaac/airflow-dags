@@ -25,7 +25,7 @@ from airflow.providers.amazon.aws.operators.lambda_function import LambdaInvokeF
 
 
 with DAG(
-    dag_id="vds_bucket_sync",
+    dag_id="vds_bucket_sync_update",
     schedule=None,
     start_date=datetime(2021, 1, 1),
     tags=["aws", "lambda", "bucket-sync"],
