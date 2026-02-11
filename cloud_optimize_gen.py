@@ -41,6 +41,8 @@ from airflow.utils.trigger_rule import TriggerRule
 
 aws_account_id = os.getenv("AWS_ACCOUNT_ID")
 venue = os.environ.get("VENUE", "SIT").lower()
+# Set default for staging_bucket if venue is 'ops'
+default_staging_bucket = f"podaac-uat-cumulus-public" if venue == "ops" else ''
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
 cluster_subnets = Variable.get("cluster_subnets", deserialize_json=True)
 default_sg = Variable.get("security_group_id")
@@ -61,7 +63,7 @@ with DAG(
         'CPU_COUNT': '96',
         'MEMORY_LIMIT': '6GB',
         'BATCH_SIZE': '96',
-        'staging_bucket': ''
+        'staging_bucket': default_staging_bucket
     },
     catchup=False,
 ) as dag:
