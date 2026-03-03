@@ -41,9 +41,26 @@ with DAG(
     params={
         "mode": {
             "type": "string",
-            "enum": ["copy", "sync", "upload_folder", "delete_folder"],
+            "oneOf": [
+                {
+                    "const": "copy",
+                    "title": "Copy - Copy folders from src that do not exist in dest"
+                },
+                {
+                    "const": "sync",
+                    "title": "Sync - Mirror src to dest (adds, updates, deletes)"
+                },
+                {
+                    "const": "upload_folder",
+                    "title": "Upload Folder - Upload a single vds collection folder"
+                },
+                {
+                    "const": "delete_folder",
+                    "title": "Delete Folder - Remove a single vds collection folder"
+                }
+            ],
             "default": "upload_folder",
-            "description": "Select deployment environment"
+            "description": "Select the operation mode to perform."
         },
         "folder": None,
         "ignore_is_same": False,
