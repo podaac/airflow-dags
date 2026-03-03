@@ -41,8 +41,8 @@ with DAG(
     params={
         "mode": {
             "type": "string",
-            "enum": ["dev", "uat", "prod"],
-            "default": "dev",
+            "enum": ["copy", "sync", "upload_folder", "delete_folder"],
+            "default": "upload_folder",
             "description": "Select deployment environment"
         },
         "folder": None,
