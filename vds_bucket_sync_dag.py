@@ -37,7 +37,7 @@ with DAG(
     catchup=False,
     params={
         # No default mode; user must specify
-        "mode": None,
+        "mode": "upload_folder",
         "folder": None,
         "ignore_is_same": False,
         "source_bucket": DEFAULTS["source_bucket"],
