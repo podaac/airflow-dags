@@ -41,7 +41,7 @@ with DAG(
     params={
         "mode": {
             "type": "string",
-            "enum": ["dev", "uat", "prod"],  # 👈 This creates dropdown
+            "enum": ["dev", "uat", "prod"],
             "default": "dev",
             "description": "Select deployment environment"
         },
@@ -61,9 +61,6 @@ with DAG(
     source_prefix = dag.params.get("source_prefix", DEFAULTS["source_prefix"])
     dest_bucket = dag.params.get("dest_bucket", DEFAULTS["dest_bucket"])
     dest_prefix = dag.params.get("dest_prefix", DEFAULTS["dest_prefix"])
-
-    if not mode or mode not in VALID_MODES:
-        raise ValueError(f"Invalid or missing mode. Must be one of: {', '.join(VALID_MODES)}")
 
     def build_event_from_params():
         event = {
