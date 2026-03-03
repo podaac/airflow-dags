@@ -39,8 +39,12 @@ with DAG(
     tags=["aws", "lambda", "bucket-sync"],
     catchup=False,
     params={
-        # No default mode; user must specify
-        "mode": "upload_folder",
+        "mode": {
+            "type": "string",
+            "enum": ["dev", "uat", "prod"],  # 👈 This creates dropdown
+            "default": "dev",
+            "description": "Select deployment environment"
+        },
         "folder": None,
         "ignore_is_same": False,
         "source_bucket": DEFAULTS["source_bucket"],
