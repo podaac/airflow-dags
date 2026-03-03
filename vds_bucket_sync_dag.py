@@ -20,6 +20,8 @@ from airflow import DAG
 from airflow.providers.amazon.aws.operators.lambda_function import LambdaInvokeFunctionOperator
 from airflow.models import Variable
 import json
+from airflow.operators.python import PythonOperator
+
 
 # Default parameters for sync_lambda
 DEFAULTS = {
@@ -86,3 +88,16 @@ with DAG(
         aws_conn_id="aws_default",
         log_type="Tail",
     )
+
+    def print_lambda_result(**context):
+        result = context['ti'].xcom_pull(task_ids='invoke_lambda_bucket_sync')
+        print("Lambda result:", result)
+        return result
+
+    print_result_task = PythonOperator(
+        task_id="print_lambda_result",
+        python_callable=print_lambda_result,
+        provide_context=True,
+    )
+
+    lambda_task >> print_result_task
