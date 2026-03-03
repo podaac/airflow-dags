@@ -19,6 +19,7 @@ from datetime import datetime
 from airflow import DAG
 from airflow.providers.amazon.aws.operators.lambda_function import LambdaInvokeFunctionOperator
 from airflow.models import Variable
+import json
 
 # Default parameters for sync_lambda
 DEFAULTS = {
@@ -74,7 +75,7 @@ with DAG(
             event.pop("source_bucket")
             event.pop("source_prefix")
             event.pop("ignore_is_same", None)
-        return event
+        return json.dumps(event)
 
     event_payload = build_event_from_params()
 
