@@ -43,14 +43,6 @@ with DAG(
             "type": "string",
             "oneOf": [
                 {
-                    "const": "copy",
-                    "title": "Copy - Copy folders from src that do not exist in dest"
-                },
-                {
-                    "const": "sync",
-                    "title": "Sync - Mirror src to dest (adds, updates, deletes)"
-                },
-                {
                     "const": "upload_folder",
                     "title": "Upload Folder - Upload a single vds collection folder"
                 },
