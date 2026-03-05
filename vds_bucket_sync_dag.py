@@ -11,9 +11,7 @@ Other params:
 - folder: Name of folder under virtual_collections/ for upload_folder or delete_folder modes.
 - ignore_is_same: If True, always copy files even if they are the same (only for copy/upload_folder modes).
 - source_bucket, source_prefix, dest_bucket, dest_prefix: S3 bucket and prefix settings.
-"""
 
-"""
 DAG for invoking the sync_lambda AWS Lambda function to synchronize S3 buckets.
 """
 
