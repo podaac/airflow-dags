@@ -13,15 +13,18 @@ Other params:
 - source_bucket, source_prefix, dest_bucket, dest_prefix: S3 bucket and prefix settings.
 """
 
+"""
+DAG for invoking the sync_lambda AWS Lambda function to synchronize S3 buckets.
+"""
+
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from airflow import DAG
+from airflow.decorators import task
 from airflow.providers.amazon.aws.operators.lambda_function import LambdaInvokeFunctionOperator
-from airflow.models import Variable
-import json
 from airflow.operators.python import PythonOperator
-
 
 # Default parameters for sync_lambda
 DEFAULTS = {
@@ -40,7 +43,7 @@ with DAG(
     catchup=False,
     params={
         "mode": "upload_folder",
-        "folder": None,
+        "folder": "",
         "ignore_is_same": False,
         "source_bucket": DEFAULTS["source_bucket"],
         "source_prefix": DEFAULTS["source_prefix"],
@@ -48,44 +51,54 @@ with DAG(
         "dest_prefix": DEFAULTS["dest_prefix"],
     },
 ) as dag:
-    VALID_MODES = {"copy", "sync", "upload_folder", "delete_folder"}
-    mode = dag.params.get("mode")
-    folder = dag.params.get("folder", None)
-    ignore_is_same = dag.params.get("ignore_is_same", False)
-    source_bucket = dag.params.get("source_bucket", DEFAULTS["source_bucket"])
-    source_prefix = dag.params.get("source_prefix", DEFAULTS["source_prefix"])
-    dest_bucket = dag.params.get("dest_bucket", DEFAULTS["dest_bucket"])
-    dest_prefix = dag.params.get("dest_prefix", DEFAULTS["dest_prefix"])
 
-    def build_event_from_params():
+    @task
+    def build_event_payload(**context):
+        """
+        Processes the runtime params and builds the JSON payload for Lambda.
+        This runs at execution time, so it sees the values you enter in the UI.
+        """
+        params = context['params']
+        mode = params['mode']
+        folder = params.get('folder')
+        
+        # Base event structure
         event = {
             "mode": mode,
-            "source_bucket": source_bucket,
-            "source_prefix": source_prefix,
-            "dest_bucket": dest_bucket,
-            "dest_prefix": dest_prefix,
+            "source_bucket": params['source_bucket'],
+            "source_prefix": params['source_prefix'],
+            "dest_bucket": params['dest_bucket'],
+            "dest_prefix": params['dest_prefix'],
         }
+
+        # Conditional Logic based on Mode
         if mode in ["copy", "upload_folder"]:
-            event["ignore_is_same"] = ignore_is_same
+            event["ignore_is_same"] = params['ignore_is_same']
+            
         if mode in ["upload_folder", "delete_folder"] and folder:
             event["folder"] = folder
+            
         if mode == "delete_folder":
-            event.pop("source_bucket")
-            event.pop("source_prefix")
+            # Clean up keys not required for deletion mode
+            event.pop("source_bucket", None)
+            event.pop("source_prefix", None)
             event.pop("ignore_is_same", None)
+
         return json.dumps(event)
 
-    event_payload = build_event_from_params()
+    # 1. Generate the payload
+    payload_data = build_event_payload()
 
-    print(event_payload)
+    # 2. Invoke Lambda using the output of the previous task
     lambda_task = LambdaInvokeFunctionOperator(
         task_id="invoke_lambda_bucket_sync",
         function_name="virtualizarr-ops-s3-bucket-sync",
-        payload=event_payload,
+        payload=payload_data,
         aws_conn_id="aws_default",
         log_type="Tail",
     )
 
+    # 3. Handle the result
     def print_lambda_result(**context):
         result = context['ti'].xcom_pull(task_ids='invoke_lambda_bucket_sync')
         print("Lambda result:", result)
@@ -94,7 +107,8 @@ with DAG(
     print_result_task = PythonOperator(
         task_id="print_lambda_result",
         python_callable=print_lambda_result,
-        provide_context=True,
     )
 
+    # Orchestration
+    # payload_data (task) >> lambda_task is handled automatically by passing the variable
     lambda_task >> print_result_task
