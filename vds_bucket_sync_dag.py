@@ -39,21 +39,7 @@ with DAG(
     tags=["aws", "lambda", "bucket-sync"],
     catchup=False,
     params={
-        "mode": {
-            "type": "string",
-            "oneOf": [
-                {
-                    "const": "upload_folder",
-                    "title": "Upload Folder - Upload a single vds collection folder"
-                },
-                {
-                    "const": "delete_folder",
-                    "title": "Delete Folder - Remove a single vds collection folder"
-                }
-            ],
-            "default": "upload_folder",
-            "description": "Select the operation mode to perform."
-        },
+        "mode": "upload_folder",
         "folder": None,
         "ignore_is_same": False,
         "source_bucket": DEFAULTS["source_bucket"],
