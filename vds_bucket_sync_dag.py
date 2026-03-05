@@ -77,6 +77,7 @@ with DAG(
 
     event_payload = build_event_from_params()
 
+    print(event_payload)
     lambda_task = LambdaInvokeFunctionOperator(
         task_id="invoke_lambda_bucket_sync",
         function_name="virtualizarr-ops-s3-bucket-sync",
