@@ -15,7 +15,6 @@ from airflow.models import Variable
 
 with DAG(
     dag_id="sar-eddy-detection",
-    schedule_interval=None,
     start_date=datetime(2024, 1, 1),
     catchup=False,
     params={'SSM_EDL_PASSWORD':'generate-edl-password', 'SSM_EDL_USERNAME':'generate-edl-username', 'START_DATE':'2019-01-01', 'END_DATE':'2019-01-10'},
