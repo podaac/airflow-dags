@@ -200,7 +200,6 @@ with DAG(
     check_should_wait = ShortCircuitOperator(
         task_id='check_should_wait',
         python_callable=should_wait_after_dummy_task,
-        provide_context=True,
         trigger_rule=TriggerRule.ALL_DONE,
     )
 
