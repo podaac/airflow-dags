@@ -87,7 +87,7 @@ def has_running_ec2_capacity(min_age_minutes: int = 3) -> bool:
     return False
 
 with DAG(
-    dag_id="simon_dag_test_7",
+    dag_id="simon_dag_test_8",
     schedule=None,
     start_date=datetime(2021, 1, 1),
     tags=["aws", "ecs", "cloud-optimized"],
