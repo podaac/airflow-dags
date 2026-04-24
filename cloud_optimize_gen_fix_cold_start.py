@@ -107,8 +107,7 @@ with DAG(
 
     check_ec2 = BranchPythonOperator(
         task_id='check_ec2_instances',
-        python_callable=has_ec2_instances_in_cluster,
-        provide_context=True,
+        python_callable=has_ec2_instances_in_cluster
     )
 
     dummy_ecs_task = EcsRunTaskOperator(

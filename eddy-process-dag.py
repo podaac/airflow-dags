@@ -60,8 +60,7 @@ with DAG(
     asf_search_task = PythonOperator(
             task_id='asf_search_task',
             python_callable=asf_search,
-            op_args=["{{ params.START_DATE }}", "{{ params.END_DATE }}"], # Positional arguments for the callable
-            provide_context=True
+            op_args=["{{ params.START_DATE }}", "{{ params.END_DATE }}"] # Positional arguments for the callable
         )
 
     # Get step function input from JSON file
