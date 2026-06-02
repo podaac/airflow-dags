@@ -4,7 +4,7 @@
     "conf": {
       "collection_id": "collection_a",
       "loadable_coordinate_variables": "lat,lon,time",
-      "output_bucket": "podaac-sit-services-cloud-optimizer",
+      "output_bucket": "podaac-uat-services-cloud-optimizer",
       "SSM_EDL_PASSWORD": "generate-edl-password",
       "SSM_EDL_USERNAME": "generate-edl-username",
       "START_DATE": "2024-01-01",
@@ -20,7 +20,7 @@
     "conf": {
       "collection_id": "collection_b",
       "loadable_coordinate_variables": "lat,lon,time",
-      "output_bucket": "podaac-sit-services-cloud-optimizer",
+      "output_bucket": "podaac-uat-services-cloud-optimizer",
       "SSM_EDL_PASSWORD": "generate-edl-password",
       "SSM_EDL_USERNAME": "generate-edl-username",
       "START_DATE": "2024-02-01",

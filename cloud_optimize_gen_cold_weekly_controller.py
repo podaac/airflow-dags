@@ -38,7 +38,10 @@ with DAG(
 
     @task
     def build_trigger_kwargs() -> list[dict]:
-        logical_date = datetime.now(timezone.utc)
+        from airflow.operators.python import get_current_context
+
+        context = get_current_context()
+        logical_date = context.get("logical_date") or datetime.now(timezone.utc)
         runs = _load_runs()
 
         trigger_kwargs: list[dict] = []
@@ -51,9 +54,9 @@ with DAG(
             if not isinstance(conf, dict):
                 raise ValueError(f"runs[{index}].conf must be a JSON object")
 
-            trigger_run_id = entry.get(
-                "trigger_run_id",
-                f"{target_dag_id}__{logical_date.strftime('%Y%m%dT%H%M%S')}__{index:02d}",
+            base_run_id = entry.get("trigger_run_id", target_dag_id)
+            trigger_run_id = (
+                f"{base_run_id}__{logical_date.strftime('%Y%m%dT%H%M%S')}__{index:02d}"
             )
 
             trigger_kwargs.append(
