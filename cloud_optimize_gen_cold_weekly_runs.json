@@ -1,14 +1,14 @@
 [
   {
-    "trigger_run_id": "collection_a_weekly",
+    "trigger_run_id": "MUR25-JPL-L4-GLOB-v04.2_weekly",
     "conf": {
-      "collection_id": "collection_a",
+      "collection_id": "MUR25-JPL-L4-GLOB-v04.2",
       "loadable_coordinate_variables": "lat,lon,time",
       "output_bucket": "podaac-uat-services-cloud-optimizer",
       "SSM_EDL_PASSWORD": "generate-edl-password",
       "SSM_EDL_USERNAME": "generate-edl-username",
-      "START_DATE": "2024-01-01",
-      "END_DATE": "2024-01-31",
+      "START_DATE": "",
+      "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
       "BATCH_SIZE": "96",
@@ -16,18 +16,18 @@
     }
   },
   {
-    "trigger_run_id": "collection_b_weekly",
+    "trigger_run_id": "SMAP_RSS_L3_SSS_SMI_8DAY-RUNNINGMEAN_V6_weekly",
     "conf": {
-      "collection_id": "collection_b",
+      "collection_id": "SMAP_RSS_L3_SSS_SMI_8DAY-RUNNINGMEAN_V6",
       "loadable_coordinate_variables": "lat,lon,time",
       "output_bucket": "podaac-uat-services-cloud-optimizer",
       "SSM_EDL_PASSWORD": "generate-edl-password",
       "SSM_EDL_USERNAME": "generate-edl-username",
-      "START_DATE": "2024-02-01",
-      "END_DATE": "2024-02-28",
-      "CPU_COUNT": "48",
-      "MEMORY_LIMIT": "4GB",
-      "BATCH_SIZE": "48",
+      "START_DATE": "",
+      "END_DATE": "",
+      "CPU_COUNT": "96",
+      "MEMORY_LIMIT": "6GB",
+      "BATCH_SIZE": "96",
       "staging_bucket": "podaac-uat-cumulus-public"
     }
   }
