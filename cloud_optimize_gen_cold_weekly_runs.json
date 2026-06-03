@@ -12,7 +12,7 @@
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
       "BATCH_SIZE": "96",
-      "staging_bucket": "podaac-uat-cumulus-public"
+      "staging_bucket": ""
     }
   },
   {
@@ -28,7 +28,7 @@
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
       "BATCH_SIZE": "96",
-      "staging_bucket": "podaac-uat-cumulus-public"
+      "staging_bucket": ""
     }
   },
   {
@@ -44,7 +44,7 @@
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
       "BATCH_SIZE": "96",
-      "staging_bucket": "podaac-uat-cumulus-public"
+      "staging_bucket": ""
     }
   },
   {
@@ -60,7 +60,7 @@
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
       "BATCH_SIZE": "96",
-      "staging_bucket": "podaac-uat-cumulus-public"
+      "staging_bucket": ""
     }
   },
   {
@@ -76,7 +76,7 @@
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
       "BATCH_SIZE": "96",
-      "staging_bucket": "podaac-uat-cumulus-public"
+      "staging_bucket": ""
     }
   }
 ]
