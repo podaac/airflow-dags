@@ -16,6 +16,7 @@
 # under the License.
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta, timezone
 
 import boto3
@@ -47,11 +48,62 @@ default_staging_bucket = f"podaac-uat-cumulus-public" if venue == "ops" else ''
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
 cluster_subnets = Variable.get("cluster_subnets", deserialize_json=True)
 default_sg = Variable.get("security_group_id")
+logger = logging.getLogger(__name__)
 
 
 def conf_or_param(key: str) -> str:
     """Use dag_run.conf when provided, otherwise fall back to DAG params."""
     return f"{{{{ dag_run.conf.get('{key}', params.{key}) }}}}"
+
+
+@task(task_id="warmup_ec2")
+def launch_warmup_ec2() -> str:
+    """Submit the warmup ECS task and always let the DAG continue."""
+    ecs_client = boto3.client("ecs")
+
+    try:
+        ecs_client.run_task(
+            cluster=cluster_name,
+            taskDefinition=f"arn:aws:ecs:us-west-2:{aws_account_id}:task-definition/service-virtualzarr-gen-{venue}-app-task",
+            capacityProviderStrategy=[
+                {"capacityProvider": f"service-virtualzarr-gen-{venue}-ecs-capacity-provider"}
+            ],
+            tags=[
+                {"key": "task_type", "value": "warmup"},
+                {"key": "collection_id", "value": "warmup"},
+            ],
+            startedBy="warmup_ec2",
+            overrides={
+                "containerOverrides": [
+                    {
+                        "name": "cloud-optimization-generation",
+                        "environment": [
+                            {"name": "COLLECTION", "value": "warmup"},
+                            {"name": "LOADABLE_VARS", "value": "warmup"},
+                            {"name": "OUTPUT_BUCKET", "value": "warmup"},
+                            {"name": "SSM_EDL_PASSWORD", "value": "warmup"},
+                            {"name": "SSM_EDL_USERNAME", "value": "warmup"},
+                            {"name": "CPU_COUNT", "value": "1"},
+                            {"name": "MEMORY_LIMIT", "value": "512MB"},
+                            {"name": "BATCH_SIZE", "value": "1"},
+                            {"name": "START_DATE", "value": ""},
+                            {"name": "END_DATE", "value": ""},
+                            {"name": "STAGING_BUCKET", "value": ""},
+                        ],
+                    }
+                ]
+            },
+            networkConfiguration={
+                "awsvpcConfiguration": {
+                    "securityGroups": [default_sg],
+                    "subnets": cluster_subnets,
+                },
+            },
+        )
+    except Exception:
+        logger.exception("Warmup ECS launch failed, but continuing with the DAG run.")
+
+    return "warmup_submitted"
 
 
 def has_running_ec2_capacity(min_age_minutes: int = 3) -> bool:
@@ -113,46 +165,8 @@ with DAG(
 ) as dag:
 
     # Warm-up task to trigger EC2 capacity provisioning on a cold cluster.
-    # This may fail on first cold start, but it helps boot infrastructure.
-    warmup_ec2 = EcsRunTaskOperator(
-        task_id="warmup_ec2",
-        cluster=cluster_name,
-        deferrable=True,
-        task_definition=f"arn:aws:ecs:us-west-2:{aws_account_id}:task-definition/service-virtualzarr-gen-{venue}-app-task",
-        capacity_provider_strategy=[
-            {"capacityProvider": f"service-virtualzarr-gen-{venue}-ecs-capacity-provider"}],
-        tags={
-            "task_type": "warmup",
-            "collection_id": "warmup",
-        },
-        overrides={
-            "containerOverrides": [
-                {
-                    "name": "cloud-optimization-generation",
-                    "environment": [
-                        {"name": "COLLECTION", "value": "warmup"},
-                        {"name": "LOADABLE_VARS", "value": "warmup"},
-                        {"name": "OUTPUT_BUCKET", "value": "warmup"},
-                        {"name": "SSM_EDL_PASSWORD", "value": "warmup"},
-                        {"name": "SSM_EDL_USERNAME", "value": "warmup"},
-                        {"name": "CPU_COUNT", "value": "1"},
-                        {"name": "MEMORY_LIMIT", "value": "512MB"},
-                        {"name": "BATCH_SIZE", "value": "1"},
-                        {"name": "START_DATE", "value": ""},
-                        {"name": "END_DATE", "value": ""},
-                        {"name": "STAGING_BUCKET", "value": ""},
-                    ],
-                }
-            ]
-        },
-        network_configuration={
-            "awsvpcConfiguration": {
-                "securityGroups": [default_sg],
-                "subnets": cluster_subnets,
-            },
-        },
-        container_name="cloud-optimization-generation",
-    )
+    # Airflow marks this task successful once the ECS submission is made.
+    warmup_ec2 = launch_warmup_ec2()
 
     # We need to set container name here as it will not be returned if the status is provisioning (sometimes?).
     # https://github.com/apache/airflow/issues/51429
