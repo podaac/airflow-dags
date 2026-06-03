@@ -11,7 +11,7 @@
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "96",
+      "BATCH_SIZE": "960",
       "staging_bucket": ""
     }
   },
@@ -27,7 +27,7 @@
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "96",
+      "BATCH_SIZE": "960",
       "staging_bucket": ""
     }
   },
@@ -43,7 +43,7 @@
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "96",
+      "BATCH_SIZE": "960",
       "staging_bucket": ""
     }
   },
@@ -59,7 +59,7 @@
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "96",
+      "BATCH_SIZE": "960",
       "staging_bucket": ""
     }
   },
@@ -75,7 +75,7 @@
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "96",
+      "BATCH_SIZE": "960",
       "staging_bucket": ""
     }
   }
