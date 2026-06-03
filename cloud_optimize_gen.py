@@ -77,6 +77,10 @@ with DAG(
         task_definition=f"arn:aws:ecs:us-west-2:{aws_account_id}:task-definition/service-virtualzarr-gen-{venue}-app-task",
         capacity_provider_strategy=[
             {"capacityProvider": f"service-virtualzarr-gen-{venue}-ecs-capacity-provider"}],
+        tags={
+            "task_type": "run_task",
+            "collection_id": "{{ params.collection_id }}",
+        },
         overrides={
             "containerOverrides": [
               {
