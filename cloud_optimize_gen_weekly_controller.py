@@ -3,8 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import boto3
@@ -12,6 +11,9 @@ from airflow.decorators import task
 from airflow.models.dag import DAG
 from airflow.models import Variable
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.sensors.python import PythonSensor
+from airflow.utils.trigger_rule import TriggerRule
+from airflow.operators.python import get_current_context
 
 
 TARGET_DAG_ID = "podaac_ecs_cloud_optimized_generator"
@@ -37,6 +39,44 @@ def _load_runs() -> list[dict]:
         raise ValueError("weekly config file must contain a top-level JSON list")
 
     return payload
+
+
+def has_running_ec2_capacity(min_age_minutes: int = 3) -> bool:
+    """
+    Returns True when the ECS cluster has at least one ACTIVE container instance
+    backed by a running EC2 instance.
+    """
+    ecs_client = boto3.client("ecs")
+    ec2_client = boto3.client("ec2")
+
+    response = ecs_client.list_container_instances(cluster=cluster_name, status="ACTIVE")
+    container_instance_arns = response.get("containerInstanceArns", [])
+    if not container_instance_arns:
+        return False
+
+    description = ecs_client.describe_container_instances(
+        cluster=cluster_name,
+        containerInstances=container_instance_arns,
+    )
+    ec2_instance_ids = [
+        instance["ec2InstanceId"]
+        for instance in description.get("containerInstances", [])
+        if instance.get("status") == "ACTIVE" and instance.get("ec2InstanceId")
+    ]
+    if not ec2_instance_ids:
+        return False
+
+    ec2_description = ec2_client.describe_instances(InstanceIds=ec2_instance_ids)
+    now = datetime.now(timezone.utc)
+    min_age = timedelta(minutes=min_age_minutes)
+
+    for reservation in ec2_description.get("Reservations", []):
+        for instance in reservation.get("Instances", []):
+            launch_time = instance.get("LaunchTime")
+            is_running = instance.get("State", {}).get("Name") == "running"
+            if is_running and launch_time and (now - launch_time) >= min_age:
+                return True
+    return False
 
 
 @task(task_id="warmup_ec2")
@@ -89,12 +129,6 @@ def launch_warmup_ec2() -> str:
     return "warmup_submitted"
 
 
-@task(task_id="wait_after_warmup")
-def wait_after_warmup() -> None:
-    """Give the EC2 warmup a few minutes to come online before triggering real runs."""
-    time.sleep(3 * 60)
-
-
 with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator_weekly_controller",
     description="Weekly controller that warms ECS once and triggers the cloud optimized generator DAG from a JSON list",
@@ -106,7 +140,6 @@ with DAG(
 
     @task
     def build_trigger_kwargs() -> list[dict]:
-        from airflow.operators.python import get_current_context
 
         context = get_current_context()
         logical_date = context.get("logical_date") or datetime.now(timezone.utc)
@@ -138,11 +171,18 @@ with DAG(
         return trigger_kwargs
 
     warmup_ec2 = launch_warmup_ec2()
-    wait_after_warmup_task = wait_after_warmup()
+    wait_for_ec2_capacity = PythonSensor(
+        task_id="wait_for_ec2_capacity",
+        python_callable=has_running_ec2_capacity,
+        poke_interval=30,
+        timeout=15 * 60,
+        mode="reschedule",
+        trigger_rule=TriggerRule.ALL_DONE,
+    )
 
     trigger_cold_generator = TriggerDagRunOperator.partial(
         task_id="trigger_cloud_optimizer",
         wait_for_completion=False,
     ).expand_kwargs(build_trigger_kwargs())
 
-    warmup_ec2 >> wait_after_warmup_task >> trigger_cold_generator
+    warmup_ec2 >> wait_for_ec2_capacity >> trigger_cold_generator
