@@ -133,7 +133,7 @@ with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator_weekly_controller",
     description="Weekly controller that warms ECS once and triggers the cloud optimized generator DAG from a JSON list",
     start_date=datetime(2021, 1, 1),
-    schedule="*/10 * * * *",
+    schedule="*/50 * * * *",
     catchup=False,
     tags=["aws", "ecs", "cloud-optimized", "controller", "weekly"],
 ) as dag:
