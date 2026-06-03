@@ -31,7 +31,7 @@ with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator_cold_weekly_controller",
     description="Weekly controller that triggers the cold generator DAG from a JSON list",
     start_date=datetime(2021, 1, 1),
-    schedule="*/5 * * * *",
+    schedule="*/10 * * * *",
     catchup=False,
     tags=["aws", "ecs", "cloud-optimized", "controller", "weekly"],
 ) as dag:
