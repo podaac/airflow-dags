@@ -11,7 +11,6 @@ from airflow.decorators import task
 from airflow.models.baseoperator import chain
 from airflow.models.dag import DAG
 from airflow.models import Variable
-from airflow.sensors.time_delta import TimeDeltaSensor
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sensors.python import PythonSensor
 from airflow.utils.trigger_rule import TriggerRule
@@ -134,7 +133,7 @@ with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator_weekly_controller",
     description="Weekly controller that warms ECS once and triggers the cloud optimized generator DAG from a JSON list",
     start_date=datetime(2021, 1, 1),
-    schedule="*/50 * * * *",
+    schedule="@weekly",
     catchup=False,
     tags=["aws", "ecs", "cloud-optimized", "controller", "weekly"],
 ) as dag:
@@ -170,16 +169,12 @@ with DAG(
             trigger_dag_id=target_dag_id,
             trigger_run_id=trigger_run_id,
             conf=conf,
-            wait_for_completion=False,
+            wait_for_completion=True,
+            deferrable=True,
         )
 
         if index > 0:
-            delay_task = TimeDeltaSensor(
-                task_id=f"wait_before_trigger_{index:02d}",
-                delta=timedelta(minutes=2),
-                mode="reschedule",
-            )
-            chain(previous_task, delay_task, trigger_task)
+            chain(previous_task, trigger_task)
         else:
             chain(previous_task, trigger_task)
 
