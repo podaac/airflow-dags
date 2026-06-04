@@ -171,6 +171,8 @@ with DAG(
             conf=conf,
             wait_for_completion=True,
             deferrable=True,
+            allowed_states=["success", "failed"],
+            failed_states=[],
         )
 
         if index > 0:
