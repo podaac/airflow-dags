@@ -7,13 +7,13 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import boto3
-from airflow.decorators import task
+from airflow.models.baseoperator import chain
 from airflow.models.dag import DAG
 from airflow.models import Variable
+from airflow.sensors.time_delta import TimeDeltaSensor
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sensors.python import PythonSensor
 from airflow.utils.trigger_rule import TriggerRule
-from airflow.operators.python import get_current_context
 
 
 TARGET_DAG_ID = "podaac_ecs_cloud_optimized_generator"
@@ -137,38 +137,7 @@ with DAG(
     catchup=False,
     tags=["aws", "ecs", "cloud-optimized", "controller", "weekly"],
 ) as dag:
-
-    @task
-    def build_trigger_kwargs() -> list[dict]:
-
-        context = get_current_context()
-        logical_date = context.get("logical_date") or datetime.now(timezone.utc)
-        runs = _load_runs()
-
-        trigger_kwargs: list[dict] = []
-        for index, entry in enumerate(runs):
-            if not isinstance(entry, dict):
-                raise ValueError(f"runs[{index}] must be a JSON object")
-
-            target_dag_id = entry.get("target_dag_id", TARGET_DAG_ID)
-            conf = entry.get("conf", entry)
-            if not isinstance(conf, dict):
-                raise ValueError(f"runs[{index}].conf must be a JSON object")
-
-            base_run_id = entry.get("trigger_run_id", target_dag_id)
-            trigger_run_id = (
-                f"{base_run_id}__{logical_date.strftime('%Y%m%dT%H%M%S')}__{index:02d}"
-            )
-
-            trigger_kwargs.append(
-                {
-                    "trigger_dag_id": target_dag_id,
-                    "trigger_run_id": trigger_run_id,
-                    "conf": conf,
-                }
-            )
-
-        return trigger_kwargs
+    runs = _load_runs()
 
     warmup_ec2 = launch_warmup_ec2()
     wait_for_ec2_capacity = PythonSensor(
@@ -180,9 +149,39 @@ with DAG(
         trigger_rule=TriggerRule.ALL_DONE,
     )
 
-    trigger_cold_generator = TriggerDagRunOperator.partial(
-        task_id="trigger_cloud_optimizer",
-        wait_for_completion=False,
-    ).expand_kwargs(build_trigger_kwargs())
+    previous_task = wait_for_ec2_capacity
+    for index, entry in enumerate(runs):
+        if not isinstance(entry, dict):
+            raise ValueError(f"runs[{index}] must be a JSON object")
 
-    warmup_ec2 >> wait_for_ec2_capacity >> trigger_cold_generator
+        target_dag_id = entry.get("target_dag_id", TARGET_DAG_ID)
+        conf = entry.get("conf", entry)
+        if not isinstance(conf, dict):
+            raise ValueError(f"runs[{index}].conf must be a JSON object")
+
+        base_run_id = entry.get("trigger_run_id", target_dag_id)
+        trigger_run_id = (
+            f"{base_run_id}__{{{{ ts_nodash }}}}__{index:02d}"
+        )
+
+        trigger_task = TriggerDagRunOperator(
+            task_id=f"trigger_cloud_optimizer_{index:02d}",
+            trigger_dag_id=target_dag_id,
+            trigger_run_id=trigger_run_id,
+            conf=conf,
+            wait_for_completion=False,
+        )
+
+        if index > 0:
+            delay_task = TimeDeltaSensor(
+                task_id=f"wait_before_trigger_{index:02d}",
+                delta=timedelta(minutes=2),
+                mode="reschedule",
+            )
+            chain(previous_task, delay_task, trigger_task)
+        else:
+            chain(previous_task, trigger_task)
+
+        previous_task = trigger_task
+
+    warmup_ec2 >> wait_for_ec2_capacity
