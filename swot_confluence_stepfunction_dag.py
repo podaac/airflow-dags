@@ -15,7 +15,6 @@ AWS_ACCOUNT_ID_SIT = os.getenv("AWS_ACCOUNT_ID_SIT")
     dag_id="swot_confluence_stepfunction_dag",
     description="Trigger Step Function and wait using deferrable operator",
     start_date=datetime(2024, 1, 1),
-    schedule_interval=None,
     catchup=False,
     tags=["aws", "stepfunction", "trigger"],
 )

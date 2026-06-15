@@ -47,6 +47,11 @@ cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
 cluster_subnets = Variable.get("cluster_subnets", deserialize_json=True)
 default_sg = Variable.get("security_group_id")
 
+
+def conf_or_param(key: str) -> str:
+    """Use dag_run.conf when provided, otherwise fall back to DAG params."""
+    return f"{{{{ dag_run.conf.get('{key}', params.{key}) }}}}"
+
 with DAG(
     dag_id="podaac_ecs_cloud_optimized_generator",
     schedule=None,
@@ -77,6 +82,10 @@ with DAG(
         task_definition=f"arn:aws:ecs:us-west-2:{aws_account_id}:task-definition/service-virtualzarr-gen-{venue}-app-task",
         capacity_provider_strategy=[
             {"capacityProvider": f"service-virtualzarr-gen-{venue}-ecs-capacity-provider"}],
+        tags={
+            "task_type": "run_task",
+            "collection_id": conf_or_param("collection_id"),
+        },
         overrides={
             "containerOverrides": [
               {
@@ -84,47 +93,47 @@ with DAG(
                   "environment": [
                         {
                           'name': 'COLLECTION',
-                          'value': "{{params.collection_id}}"
+                          'value': conf_or_param("collection_id")
                         },
                         {
                           'name': 'LOADABLE_VARS',
-                          'value': "{{params.loadable_coordinate_variables}}"
+                          'value': conf_or_param("loadable_coordinate_variables")
                         },
                         {
                           'name': 'OUTPUT_BUCKET',
-                          'value': "{{params.output_bucket}}"
+                          'value': conf_or_param("output_bucket")
                         },
                         {
                           'name': 'SSM_EDL_PASSWORD',
-                          'value': "{{params.SSM_EDL_PASSWORD}}"
+                          'value': conf_or_param("SSM_EDL_PASSWORD")
                         },
                         {
                           'name': 'SSM_EDL_USERNAME',
-                          'value': "{{params.SSM_EDL_USERNAME}}"
+                          'value': conf_or_param("SSM_EDL_USERNAME")
                         },
                         {
                           'name': 'CPU_COUNT',
-                          'value': "{{params.CPU_COUNT}}"
+                          'value': conf_or_param("CPU_COUNT")
                         },
                         {
                           'name': 'MEMORY_LIMIT',
-                          'value': "{{params.MEMORY_LIMIT}}"
+                          'value': conf_or_param("MEMORY_LIMIT")
                         },
                         {
                           'name': 'BATCH_SIZE',
-                          'value': "{{params.BATCH_SIZE}}"
+                          'value': conf_or_param("BATCH_SIZE")
                         },
                         {
                           'name': 'START_DATE',
-                          'value': "{{params.START_DATE}}"
+                          'value': conf_or_param("START_DATE")
                         },
                         {
                           'name': 'END_DATE',
-                          'value': "{{params.END_DATE}}"
+                          'value': conf_or_param("END_DATE")
                         },
                         {
                           'name': 'STAGING_BUCKET',
-                          'value': "{{params.staging_bucket}}"
+                          'value': conf_or_param("staging_bucket")
                         }
                     ]
                 }

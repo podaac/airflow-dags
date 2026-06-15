@@ -35,7 +35,6 @@ DEFAULTS = {
 
 with DAG(
     dag_id="vds_bucket_sync_update",
-    schedule_interval=None,
     start_date=datetime(2021, 1, 1),
     tags=["aws", "lambda", "bucket-sync"],
     catchup=False,

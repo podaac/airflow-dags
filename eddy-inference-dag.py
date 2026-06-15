@@ -15,7 +15,6 @@ from airflow.models import Variable
 
 with DAG(
     dag_id="sar-eddy-inference",
-    schedule_interval=None,
     start_date=datetime(2024, 1, 1),
     catchup=False,
     params={'SCENE_TARBALL': None},
