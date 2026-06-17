@@ -4,15 +4,13 @@
     "conf": {
       "collection_id": "MUR25-JPL-L4-GLOB-v04.2",
       "loadable_coordinate_variables": "lat,lon,time",
-      "output_bucket": "podaac-uat-services-cloud-optimizer",
       "SSM_EDL_PASSWORD": "generate-edl-password",
       "SSM_EDL_USERNAME": "generate-edl-username",
       "START_DATE": "",
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "960",
-      "staging_bucket": ""
+      "BATCH_SIZE": "960"
     }
   },
   {
@@ -20,15 +18,13 @@
     "conf": {
       "collection_id": "SMAP_RSS_L3_SSS_SMI_8DAY-RUNNINGMEAN_V6",
       "loadable_coordinate_variables": "lat,lon,time",
-      "output_bucket": "podaac-uat-services-cloud-optimizer",
       "SSM_EDL_PASSWORD": "generate-edl-password",
       "SSM_EDL_USERNAME": "generate-edl-username",
       "START_DATE": "",
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "960",
-      "staging_bucket": ""
+      "BATCH_SIZE": "960"
     }
   },
   {
@@ -36,15 +32,13 @@
     "conf": {
       "collection_id": "TELLUS_GRAC-GRFO_MASCON_CRI_GRID_RL06.3_V4",
       "loadable_coordinate_variables": "lat,lon,time",
-      "output_bucket": "podaac-uat-services-cloud-optimizer",
       "SSM_EDL_PASSWORD": "generate-edl-password",
       "SSM_EDL_USERNAME": "generate-edl-username",
       "START_DATE": "",
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "960",
-      "staging_bucket": ""
+      "BATCH_SIZE": "960"
     }
   },
   {
@@ -52,15 +46,13 @@
     "conf": {
       "collection_id": "CCMP_WINDS_10M6HR_L4_V3.1",
       "loadable_coordinate_variables": "latitude,longitude,time",
-      "output_bucket": "podaac-uat-services-cloud-optimizer",
       "SSM_EDL_PASSWORD": "generate-edl-password",
       "SSM_EDL_USERNAME": "generate-edl-username",
       "START_DATE": "",
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "960",
-      "staging_bucket": ""
+      "BATCH_SIZE": "960"
     }
   },
   {
@@ -68,15 +60,13 @@
     "conf": {
       "collection_id": "SWOT_L2_LR_SSH_Basic_D",
       "loadable_coordinate_variables": "latitude,longitude,time",
-      "output_bucket": "podaac-uat-services-cloud-optimizer",
       "SSM_EDL_PASSWORD": "generate-edl-password",
       "SSM_EDL_USERNAME": "generate-edl-username",
       "START_DATE": "",
       "END_DATE": "",
       "CPU_COUNT": "96",
       "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "960",
-      "staging_bucket": ""
+      "BATCH_SIZE": "960"
     }
   }
 ]
