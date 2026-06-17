@@ -175,11 +175,7 @@ with DAG(
             failed_states=[],
         )
 
-        if index > 0:
-            chain(previous_task, trigger_task)
-        else:
-            chain(previous_task, trigger_task)
-
+        chain(previous_task, trigger_task)
         previous_task = trigger_task
 
     warmup_ec2 >> wait_for_ec2_capacity
