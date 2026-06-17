@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,6 +12,10 @@ from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 TARGET_DAG_ID = "podaac_ecs_cloud_optimized_generator_cold"
 CONFIG_FILE = Path(__file__).with_name("cloud_optimize_gen_cold_weekly_runs.json")
+
+venue = os.environ.get("VENUE", "SIT").lower()
+output_bucket = f"podaac-{venue}-services-cloud-optimizer"
+staging_bucket = "podaac-uat-cumulus-public" if venue == "ops" else ""
 
 
 def _load_runs() -> list[dict]:
@@ -58,6 +63,9 @@ with DAG(
             trigger_run_id = (
                 f"{base_run_id}__{logical_date.strftime('%Y%m%dT%H%M%S')}__{index:02d}"
             )
+
+            conf["output_bucket"] = output_bucket
+            conf["staging_bucket"] = staging_bucket
 
             trigger_kwargs.append(
                 {
