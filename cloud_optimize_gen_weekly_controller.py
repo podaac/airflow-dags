@@ -21,6 +21,8 @@ CONFIG_FILE = Path(__file__).with_name("cloud_optimize_gen_cold_weekly_runs.json
 
 aws_account_id = os.getenv("AWS_ACCOUNT_ID")
 venue = os.environ.get("VENUE", "SIT").lower()
+output_bucket = f"podaac-{venue}-services-cloud-optimizer"
+staging_bucket = "podaac-uat-cumulus-public" if venue == "ops" else ""
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
 cluster_subnets = Variable.get("cluster_subnets", deserialize_json=True)
 default_sg = Variable.get("security_group_id")
@@ -158,6 +160,9 @@ with DAG(
         conf = entry.get("conf", entry)
         if not isinstance(conf, dict):
             raise ValueError(f"runs[{index}].conf must be a JSON object")
+
+        conf["output_bucket"] = output_bucket
+        conf["staging_bucket"] = staging_bucket
 
         base_run_id = entry.get("trigger_run_id", target_dag_id)
         trigger_run_id = (
