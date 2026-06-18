@@ -1,6 +1,6 @@
 """Airflow 3.2.1 DAG to run VDS tests for each collection/protocol combination."""
 
-import os
+from pathlib import Path
 from datetime import datetime
 
 from airflow.sdk import DAG
@@ -15,8 +15,8 @@ ALL_COLLECTIONS = [
     "SWOT_L2_LR_SSH_Basic_D",
 ]
 
-DAG_DIR = os.path.dirname(os.path.abspath(__file__))
-REQUIREMENTS = os.path.join(DAG_DIR, "requirements.txt")
+DAG_DIR = Path(__file__).parent
+REQUIREMENTS = Path(__file__).with_name("requirements.txt")
 
 
 def run_vds_test(collection: str, dag_dir: str, earthdata_username: str, earthdata_password: str):
@@ -77,10 +77,10 @@ with DAG(
     run_tests = PythonVirtualenvOperator.partial(
         task_id="run_vds_test",
         python_callable=run_vds_test,
-        requirements=REQUIREMENTS,
+        requirements=str(REQUIREMENTS),
         system_site_packages=False,
         op_kwargs={
-            "dag_dir": DAG_DIR,
+            "dag_dir": str(DAG_DIR),
             "earthdata_username": creds["earthdata_username"],
             "earthdata_password": creds["earthdata_password"],
         },
