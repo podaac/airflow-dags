@@ -231,9 +231,10 @@ with DAG(
                 failed_states=["failed"],
             )
 
-            #chain(previous_task, trigger_task, sync_uat_task, test_vds_task, sync_ops_task)
+            # chain(previous_task, trigger_task, sync_uat_task, test_vds_task, sync_ops_task)
+            # previous_task = sync_ops_task
             chain(previous_task, trigger_task, sync_uat_task, test_vds_task)
-            previous_task = sync_ops_task
+            previous_task = test_vds_task
         else:
             chain(previous_task, trigger_task)
             previous_task = trigger_task
