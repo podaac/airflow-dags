@@ -200,32 +200,40 @@ with DAG(
                 failed_states=[],
             )
 
-            # test new vds if pass then upload to ops public bucket
-            test_pass = False
-            if test_pass:
-                sync_ops_task = TriggerDagRunOperator(
-                    task_id=f"sync_ops_{collection_id}",
-                    trigger_dag_id="vds_bucket_sync_update",
-                    trigger_run_id=f"sync_ops_{collection_id}__{{{{ ts_nodash }}}}__{index:02d}",
-                    conf={
-                        "mode": "upload_folder",
-                        "folder": collection_id,
-                        "ignore_is_same": True,
-                        "source_bucket": output_bucket,
-                        "source_prefix": "virtual_collections/",
-                        "dest_bucket": "podaac-ops-cumulus-public",
-                        "dest_prefix": "virtual_collections/",
-                    },
-                    wait_for_completion=True,
-                    deferrable=True,
-                    allowed_states=["success", "failed"],
-                    failed_states=[],
-                )
-                chain(previous_task, trigger_task, sync_uat_task, sync_ops_task)
-                previous_task = sync_ops_task
-            else:
-                chain(previous_task, trigger_task, sync_uat_task)
-                previous_task = sync_uat_task
+            # test new vds — if pass then upload to ops public bucket
+            test_vds_task = TriggerDagRunOperator(
+                task_id=f"test_vds_{collection_id}",
+                trigger_dag_id="vds_integration_tests",
+                trigger_run_id=f"test_vds_{collection_id}__{{{{ ts_nodash }}}}__{index:02d}",
+                conf={"collections": [collection_id]},
+                wait_for_completion=True,
+                deferrable=True,
+                allowed_states=["success"],
+                failed_states=["failed"],
+            )
+
+            sync_ops_task = TriggerDagRunOperator(
+                task_id=f"sync_ops_{collection_id}",
+                trigger_dag_id="vds_bucket_sync_update",
+                trigger_run_id=f"sync_ops_{collection_id}__{{{{ ts_nodash }}}}__{index:02d}",
+                conf={
+                    "mode": "upload_folder",
+                    "folder": collection_id,
+                    "ignore_is_same": True,
+                    "source_bucket": output_bucket,
+                    "source_prefix": "virtual_collections/",
+                    "dest_bucket": "podaac-ops-cumulus-public",
+                    "dest_prefix": "virtual_collections/",
+                },
+                wait_for_completion=True,
+                deferrable=True,
+                allowed_states=["success", "failed"],
+                failed_states=[],
+            )
+
+            #chain(previous_task, trigger_task, sync_uat_task, test_vds_task, sync_ops_task)
+            chain(previous_task, trigger_task, sync_uat_task, test_vds_task)
+            previous_task = sync_ops_task
         else:
             chain(previous_task, trigger_task)
             previous_task = trigger_task

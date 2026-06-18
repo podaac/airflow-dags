@@ -218,6 +218,10 @@ def main():
         for key, result in results.items():
             print(f"  {key:<50} {result}")
 
+    failed = any("FAILED" in v for v in results.values())
+    if failed:
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
