@@ -60,17 +60,7 @@ with DAG(
     def get_collections(**context):
         return context["params"]["collections"]
 
-    @task
-    def get_credentials():
-        from airflow.models import Variable
-
-        return {
-            "earthdata_username": Variable.get("EARTHDATA_USERNAME"),
-            "earthdata_password": Variable.get("EARTHDATA_PASSWORD"),
-        }
-
     collections = get_collections()
-    creds = get_credentials()
 
     run_tests = PythonVirtualenvOperator.partial(
         task_id="run_vds_test",
@@ -79,7 +69,7 @@ with DAG(
         system_site_packages=False,
         op_kwargs={
             "dag_dir": str(DAG_DIR),
-            "earthdata_username": creds["earthdata_username"],
-            "earthdata_password": creds["earthdata_password"],
+            "earthdata_username": "{{ var.value.EARTHDATA_USERNAME }}",
+            "earthdata_password": "{{ var.value.EARTHDATA_PASSWORD }}",
         },
     ).expand(op_args=collections.map(lambda col: [col]))
