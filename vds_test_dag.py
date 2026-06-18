@@ -1,4 +1,4 @@
-"""Airflow 3.2.1 DAG to run VDS tests for each collection/protocol combination."""
+"""Airflow DAG to run VDS integration tests for each collection (the CLI tests both HTTPS and S3 by default)."""
 
 from pathlib import Path
 from datetime import datetime
