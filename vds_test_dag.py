@@ -57,10 +57,10 @@ with DAG(
 ) as dag:
 
     @task
-    def get_collections(**context):
-        return context["params"]["collections"]
+    def get_collection_op_args(**context):
+        return [[col] for col in context["params"]["collections"]]
 
-    collections = get_collections()
+    collection_op_args = get_collection_op_args()
 
     run_tests = PythonVirtualenvOperator.partial(
         task_id="run_vds_test",
@@ -72,4 +72,4 @@ with DAG(
             "earthdata_username": "{{ var.value.EARTHDATA_USERNAME }}",
             "earthdata_password": "{{ var.value.EARTHDATA_PASSWORD }}",
         },
-    ).expand(op_args=collections.map(lambda col: [col]))
+    ).expand(op_args=collection_op_args)
