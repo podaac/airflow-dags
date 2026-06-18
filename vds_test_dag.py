@@ -3,10 +3,8 @@
 from pathlib import Path
 from datetime import datetime
 
-from airflow.sdk import DAG
-from airflow.operators.python import PythonVirtualenvOperator
-from airflow.operators.python import PythonOperator
-from airflow.decorators import task
+from airflow.sdk import DAG, task
+from airflow.providers.standard.operators.python import PythonVirtualenvOperator
 
 ALL_COLLECTIONS = [
     "MUR25-JPL-L4-GLOB-v04.2",
@@ -16,7 +14,7 @@ ALL_COLLECTIONS = [
 ]
 
 DAG_DIR = Path(__file__).parent
-REQUIREMENTS = Path(__file__).with_name("requirements.txt")
+REQUIREMENTS = Path(__file__).with_name("requirements.txt").read_text().splitlines()
 
 
 def run_vds_test(collection: str, dag_dir: str, earthdata_username: str, earthdata_password: str):
@@ -77,7 +75,7 @@ with DAG(
     run_tests = PythonVirtualenvOperator.partial(
         task_id="run_vds_test",
         python_callable=run_vds_test,
-        requirements=str(REQUIREMENTS),
+        requirements=REQUIREMENTS,
         system_site_packages=False,
         op_kwargs={
             "dag_dir": str(DAG_DIR),
