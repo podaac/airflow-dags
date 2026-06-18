@@ -24,7 +24,6 @@ frozenlist==1.8.0
 fsspec==2025.7.0
 google-crc32c==1.8.0
 h5py==3.16.0
-icechunk==1.1.19
 idna==3.18
 importlib_resources==7.1.0
 Jinja2==3.1.6
@@ -69,7 +68,6 @@ typing_extensions==4.15.0
 ujson==5.13.0
 universal_pathlib==0.3.10
 urllib3==2.7.0
-virtualizarr==2.4.0
 wrapt==1.17.3
 xarray==2025.6.1
 xyzservices==2026.3.0
