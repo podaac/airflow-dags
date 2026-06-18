@@ -176,8 +176,8 @@ with DAG(
             conf=conf,
             wait_for_completion=True,
             deferrable=True,
-            allowed_states=["success", "failed"],
-            failed_states=[],
+            allowed_states=["success"],
+            failed_states=["failed"],
         )
 
         if venue == "ops":
@@ -196,8 +196,8 @@ with DAG(
                 },
                 wait_for_completion=True,
                 deferrable=True,
-                allowed_states=["success", "failed"],
-                failed_states=[],
+                allowed_states=["success""],
+                failed_states=["failed"],
             )
 
             # test new vds — if pass then upload to ops public bucket
@@ -227,8 +227,8 @@ with DAG(
                 },
                 wait_for_completion=True,
                 deferrable=True,
-                allowed_states=["success", "failed"],
-                failed_states=[],
+                allowed_states=["success"],
+                failed_states=["failed"],
             )
 
             #chain(previous_task, trigger_task, sync_uat_task, test_vds_task, sync_ops_task)
