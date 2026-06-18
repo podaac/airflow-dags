@@ -196,7 +196,7 @@ with DAG(
                 },
                 wait_for_completion=True,
                 deferrable=True,
-                allowed_states=["success""],
+                allowed_states=["success"],
                 failed_states=["failed"],
             )
 
