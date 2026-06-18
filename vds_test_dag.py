@@ -15,11 +15,11 @@ ALL_COLLECTIONS = [
     "SWOT_L2_LR_SSH_Basic_D",
 ]
 
-VDS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vds_tests")
-REQUIREMENTS = os.path.join(VDS_DIR, "requirements.txt")
+DAG_DIR = os.path.dirname(os.path.abspath(__file__))
+REQUIREMENTS = os.path.join(DAG_DIR, "requirements.txt")
 
 
-def run_vds_test(collection: str, vds_dir: str, earthdata_username: str, earthdata_password: str):
+def run_vds_test(collection: str, dag_dir: str, earthdata_username: str, earthdata_password: str):
     import subprocess
     import sys
     import os as _os
@@ -29,10 +29,10 @@ def run_vds_test(collection: str, vds_dir: str, earthdata_username: str, earthda
     env["EARTHDATA_PASSWORD"] = earthdata_password
 
     result = subprocess.run(
-        [sys.executable, _os.path.join(vds_dir, "vds_test.py"), collection],
+        [sys.executable, _os.path.join(dag_dir, "vds_test.py"), collection],
         capture_output=True,
         text=True,
-        cwd=vds_dir,
+        cwd=dag_dir,
         env=env,
     )
 
@@ -80,7 +80,7 @@ with DAG(
         requirements=REQUIREMENTS,
         system_site_packages=False,
         op_kwargs={
-            "vds_dir": VDS_DIR,
+            "dag_dir": DAG_DIR,
             "earthdata_username": creds["earthdata_username"],
             "earthdata_password": creds["earthdata_password"],
         },
