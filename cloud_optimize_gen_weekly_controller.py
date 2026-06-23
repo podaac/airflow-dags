@@ -184,7 +184,7 @@ with DAG(
 
         collection_id = conf.get("collection_id", f"unknown_{index:02d}")
         trigger_task = TriggerDagRunOperator(
-            task_id=f"trigger_{collection_id}",
+            task_id=f"trigger_vds_generation_{collection_id}",
             trigger_dag_id=target_dag_id,
             trigger_run_id=trigger_run_id,
             conf=conf,
@@ -192,6 +192,9 @@ with DAG(
             deferrable=True,
             allowed_states=["success"],
             failed_states=["failed"],
+            retries=1,
+            retry_delay=timedelta(minutes=5),
+            reset_dag_run=True,
         )
         trigger_handoff = EmptyOperator(
             task_id=f"continue_after_trigger_{collection_id}",
@@ -200,7 +203,7 @@ with DAG(
 
         if venue == "ops":
             sync_uat_task = TriggerDagRunOperator(
-                task_id=f"sync_{collection_id}",
+                task_id=f"sync__uat_{collection_id}",
                 trigger_dag_id="vds_bucket_sync_update",
                 trigger_run_id=f"sync_{collection_id}__{{{{ ts_nodash }}}}__{index:02d}",
                 conf={
