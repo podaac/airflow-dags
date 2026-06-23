@@ -179,8 +179,8 @@ def main():
                 if 0 <= idx < len(keys):
                     selected.append(keys[idx])
                 else:
-                    print(f"Invalid number: {item}")
-                    return
+                    print(f"Invalid number: {item}", file=sys.stderr)
+                    sys.exit(2)
             elif item in COLLECTIONS:
                 selected.append(item)
             else:
