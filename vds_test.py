@@ -195,8 +195,8 @@ def main():
             elif name in COLLECTIONS:
                 selected.append(name)
             else:
-                print(f"Unknown collection: {name}")
-                return
+                print(f"Unknown collection: {name}", file=sys.stderr)
+                sys.exit(2)
 
     protocols = ["https", "s3"] if args.protocol == "both" else [args.protocol]
 
