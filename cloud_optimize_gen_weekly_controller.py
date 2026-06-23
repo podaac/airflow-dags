@@ -11,8 +11,11 @@ from airflow.decorators import task
 from airflow.models.baseoperator import chain
 from airflow.models.dag import DAG
 from airflow.models import Variable
+from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import BranchPythonOperator
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sensors.python import PythonSensor
+from airflow.utils.state import State
 from airflow.utils.trigger_rule import TriggerRule
 
 
@@ -22,7 +25,6 @@ CONFIG_FILE = Path(__file__).with_name("cloud_optimize_gen_cold_weekly_runs.json
 aws_account_id = os.getenv("AWS_ACCOUNT_ID")
 venue = os.environ.get("VENUE", "SIT").lower()
 output_bucket = f"podaac-{venue}-services-cloud-optimizer"
-staging_bucket = "podaac-uat-cumulus-public" if venue == "ops" else ""
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
 cluster_subnets = Variable.get("cluster_subnets", deserialize_json=True)
 default_sg = Variable.get("security_group_id")
@@ -79,6 +81,17 @@ def has_running_ec2_capacity(min_age_minutes: int = 3) -> bool:
             if is_running and launch_time and (now - launch_time) >= min_age:
                 return True
     return False
+
+
+def _branch_after_sync_uat(sync_uat_task_id: str, test_vds_task_id: str, continue_task_id: str, **context) -> str:
+    """Route around VDS validation when the UAT sync failed."""
+    dag_run = context["dag_run"]
+    sync_uat_ti = dag_run.get_task_instance(sync_uat_task_id)
+
+    if sync_uat_ti and sync_uat_ti.state == State.SUCCESS:
+        return test_vds_task_id
+
+    return continue_task_id
 
 
 @task(task_id="warmup_ec2")
@@ -162,25 +175,115 @@ with DAG(
             raise ValueError(f"runs[{index}].conf must be a JSON object")
 
         conf["output_bucket"] = output_bucket
-        conf["staging_bucket"] = staging_bucket
 
         base_run_id = entry.get("trigger_run_id", target_dag_id)
         trigger_run_id = (
             f"{base_run_id}__{{{{ ts_nodash }}}}__{index:02d}"
         )
 
+        collection_id = conf.get("collection_id", f"unknown_{index:02d}")
         trigger_task = TriggerDagRunOperator(
-            task_id=f"trigger_cloud_optimizer_{index:02d}",
+            task_id=f"trigger_vds_generation_{collection_id}",
             trigger_dag_id=target_dag_id,
             trigger_run_id=trigger_run_id,
             conf=conf,
             wait_for_completion=True,
             deferrable=True,
-            allowed_states=["success", "failed"],
-            failed_states=[],
+            allowed_states=["success"],
+            failed_states=["failed"],
+            retries=1,
+            retry_delay=timedelta(minutes=5),
+            reset_dag_run=True,
+        )
+        trigger_handoff = EmptyOperator(
+            task_id=f"continue_after_trigger_{collection_id}",
+            trigger_rule=TriggerRule.ALL_DONE,
         )
 
-        chain(previous_task, trigger_task)
-        previous_task = trigger_task
+        if venue == "ops":
+            sync_uat_task = TriggerDagRunOperator(
+                task_id=f"sync__uat_{collection_id}",
+                trigger_dag_id="vds_bucket_sync_update",
+                trigger_run_id=f"sync_{collection_id}__{{{{ ts_nodash }}}}__{index:02d}",
+                conf={
+                    "mode": "upload_folder",
+                    "folder": collection_id,
+                    "ignore_is_same": True,
+                    "source_bucket": output_bucket,
+                    "source_prefix": "virtual_collections/",
+                    "dest_bucket": "podaac-uat-cumulus-public",
+                    "dest_prefix": "virtual_collections/",
+                },
+                wait_for_completion=True,
+                deferrable=True,
+                allowed_states=["success"],
+                failed_states=["failed"],
+            )
+            sync_uat_handoff = EmptyOperator(
+                task_id=f"continue_after_sync_uat_{collection_id}",
+                trigger_rule=TriggerRule.ALL_DONE,
+            )
+            sync_uat_branch = BranchPythonOperator(
+                task_id=f"branch_after_sync_uat_{collection_id}",
+                python_callable=_branch_after_sync_uat,
+                op_kwargs={
+                    "sync_uat_task_id": sync_uat_task.task_id,
+                    "test_vds_task_id": f"test_vds_{collection_id}",
+                    "continue_task_id": sync_uat_handoff.task_id,
+                },
+                trigger_rule=TriggerRule.ALL_DONE,
+            )
+            continue_after_collection = EmptyOperator(
+                task_id=f"continue_after_collection_{collection_id}",
+                trigger_rule=TriggerRule.ALL_DONE,
+            )
+
+            # test new vds — if pass then upload to ops public bucket
+            test_vds_task = TriggerDagRunOperator(
+                task_id=f"test_vds_{collection_id}",
+                trigger_dag_id="vds_integration_tests",
+                trigger_run_id=f"test_vds_{collection_id}__{{{{ ts_nodash }}}}__{index:02d}",
+                conf={"collections": [collection_id]},
+                wait_for_completion=True,
+                deferrable=True,
+                allowed_states=["success"],
+                failed_states=["failed"],
+            )
+
+            # sync_ops_task = TriggerDagRunOperator(
+            #     task_id=f"sync_ops_{collection_id}",
+            #     trigger_dag_id="vds_bucket_sync_update",
+            #     trigger_run_id=f"sync_ops_{collection_id}__{{{{ ts_nodash }}}}__{index:02d}",
+            #     conf={
+            #         "mode": "upload_folder",
+            #         "folder": collection_id,
+            #         "ignore_is_same": True,
+            #         "source_bucket": output_bucket,
+            #         "source_prefix": "virtual_collections/",
+            #         "dest_bucket": "podaac-ops-cumulus-public",
+            #         "dest_prefix": "virtual_collections/",
+            #     },
+            #     wait_for_completion=True,
+            #     deferrable=True,
+            #     allowed_states=["success"],
+            #     failed_states=["failed"],
+            # )
+
+            # If UAT sync fails, skip VDS testing and ops sync for this collection.
+            chain(
+                previous_task,
+                trigger_task,
+                trigger_handoff,
+                sync_uat_task,
+                sync_uat_branch,
+            )
+            sync_uat_branch >> test_vds_task
+            sync_uat_branch >> sync_uat_handoff
+            sync_uat_handoff >> continue_after_collection
+            test_vds_task >> continue_after_collection
+            previous_task = continue_after_collection
+        else:
+            chain(previous_task, trigger_task, trigger_handoff)
+            previous_task = trigger_handoff
 
     warmup_ec2 >> wait_for_ec2_capacity
