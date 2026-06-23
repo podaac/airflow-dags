@@ -184,8 +184,8 @@ def main():
             elif item in COLLECTIONS:
                 selected.append(item)
             else:
-                print(f"Unknown collection: {item}")
-                return
+                print(f"Unknown collection: {item}", file=sys.stderr)
+                sys.exit(2)
     else:
         selected = []
         for name in args.collections:
