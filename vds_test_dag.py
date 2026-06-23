@@ -58,7 +58,9 @@ with DAG(
 
     @task
     def get_collection_op_args(**context):
-        return [[col] for col in context["params"]["collections"]]
+        conf = (context["dag_run"].conf or {})
+        collections = conf.get("collections", context["params"]["collections"])
+        return [[col] for col in collections]
 
     collection_op_args = get_collection_op_args()
 
