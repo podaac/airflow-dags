@@ -176,8 +176,8 @@ with DAG(
             conf=conf,
             wait_for_completion=True,
             deferrable=True,
-            allowed_states=["success"],
-            failed_states=["failed"],
+            allowed_states=["success", "failed"],
+            failed_states=[],
         )
 
         if venue == "ops":
