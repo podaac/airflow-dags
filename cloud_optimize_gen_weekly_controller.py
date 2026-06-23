@@ -25,7 +25,6 @@ CONFIG_FILE = Path(__file__).with_name("cloud_optimize_gen_cold_weekly_runs.json
 aws_account_id = os.getenv("AWS_ACCOUNT_ID")
 venue = os.environ.get("VENUE", "SIT").lower()
 output_bucket = f"podaac-{venue}-services-cloud-optimizer"
-staging_bucket = "podaac-uat-cumulus-public" if venue == "ops" else ""
 cluster_name = f"service-virtualzarr-gen-{venue}-cluster"
 cluster_subnets = Variable.get("cluster_subnets", deserialize_json=True)
 default_sg = Variable.get("security_group_id")
