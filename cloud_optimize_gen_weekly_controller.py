@@ -86,9 +86,26 @@ def has_running_ec2_capacity(min_age_minutes: int = 3) -> bool:
 def _branch_after_sync_uat(sync_uat_task_id: str, test_vds_task_id: str, continue_task_id: str, **context) -> str:
     """Route around VDS validation when the UAT sync failed."""
     dag_run = context["dag_run"]
-    sync_uat_ti = dag_run.get_task_instance(sync_uat_task_id)
+    sync_uat_ti = None
 
-    if sync_uat_ti and sync_uat_ti.state == State.SUCCESS:
+    get_task_instance = getattr(dag_run, "get_task_instance", None)
+    if callable(get_task_instance):
+        sync_uat_ti = get_task_instance(sync_uat_task_id)
+    else:
+        task_instances = getattr(dag_run, "task_instances", None) or []
+        sync_uat_ti = next(
+            (task_instance for task_instance in task_instances if getattr(task_instance, "task_id", None) == sync_uat_task_id),
+            None,
+        )
+
+    sync_uat_result = None
+    if sync_uat_ti is None:
+        sync_uat_result = context["ti"].xcom_pull(task_ids=sync_uat_task_id)
+
+    if getattr(sync_uat_ti, "state", None) == State.SUCCESS:
+        return test_vds_task_id
+
+    if sync_uat_result is not None:
         return test_vds_task_id
 
     return continue_task_id
