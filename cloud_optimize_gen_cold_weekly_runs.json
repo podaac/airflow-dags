@@ -12,8 +12,61 @@
       "MEMORY_LIMIT": "6GB",
       "BATCH_SIZE": "960"
     }
+  },
+  {
+    "trigger_run_id": "SMAP_RSS_L3_SSS_SMI_8DAY-RUNNINGMEAN_V6_weekly",
+    "conf": {
+      "collection_id": "SMAP_RSS_L3_SSS_SMI_8DAY-RUNNINGMEAN_V6",
+      "loadable_coordinate_variables": "lat,lon,time",
+      "SSM_EDL_PASSWORD": "generate-edl-password",
+      "SSM_EDL_USERNAME": "generate-edl-username",
+      "START_DATE": "",
+      "END_DATE": "",
+      "CPU_COUNT": "96",
+      "MEMORY_LIMIT": "6GB",
+      "BATCH_SIZE": "960"
+    }
+  },
+  {
+    "trigger_run_id": "TELLUS_GRAC-GRFO_MASCON_CRI_GRID_RL06.3_V4_weekly",
+    "conf": {
+      "collection_id": "TELLUS_GRAC-GRFO_MASCON_CRI_GRID_RL06.3_V4",
+      "loadable_coordinate_variables": "lat,lon,time",
+      "SSM_EDL_PASSWORD": "generate-edl-password",
+      "SSM_EDL_USERNAME": "generate-edl-username",
+      "START_DATE": "",
+      "END_DATE": "",
+      "CPU_COUNT": "96",
+      "MEMORY_LIMIT": "6GB",
+      "BATCH_SIZE": "960"
+    }
+  },
+  {
+    "trigger_run_id": "CCMP_WINDS_10M6HR_L4_V3.1_weekly",
+    "conf": {
+      "collection_id": "CCMP_WINDS_10M6HR_L4_V3.1",
+      "loadable_coordinate_variables": "latitude,longitude,time",
+      "SSM_EDL_PASSWORD": "generate-edl-password",
+      "SSM_EDL_USERNAME": "generate-edl-username",
+      "START_DATE": "",
+      "END_DATE": "",
+      "CPU_COUNT": "96",
+      "MEMORY_LIMIT": "6GB",
+      "BATCH_SIZE": "960"
+    }
+  },
+  {
+    "trigger_run_id": "SWOT_L2_LR_SSH_Basic_D_weekly",
+    "conf": {
+      "collection_id": "SWOT_L2_LR_SSH_Basic_D",
+      "loadable_coordinate_variables": "latitude,longitude,time",
+      "SSM_EDL_PASSWORD": "generate-edl-password",
+      "SSM_EDL_USERNAME": "generate-edl-username",
+      "START_DATE": "",
+      "END_DATE": "",
+      "CPU_COUNT": "96",
+      "MEMORY_LIMIT": "6GB",
+      "BATCH_SIZE": "960"
+    }
   }
 ]
-
-
-
