@@ -14,20 +14,6 @@
     }
   },
   {
-    "trigger_run_id": "SMAP_RSS_L3_SSS_SMI_8DAY-RUNNINGMEAN_V6_weekly",
-    "conf": {
-      "collection_id": "SMAP_RSS_L3_SSS_SMI_8DAY-RUNNINGMEAN_V6",
-      "loadable_coordinate_variables": "lat,lon,time",
-      "SSM_EDL_PASSWORD": "generate-edl-password",
-      "SSM_EDL_USERNAME": "generate-edl-username",
-      "START_DATE": "",
-      "END_DATE": "",
-      "CPU_COUNT": "96",
-      "MEMORY_LIMIT": "6GB",
-      "BATCH_SIZE": "960"
-    }
-  },
-  {
     "trigger_run_id": "TELLUS_GRAC-GRFO_MASCON_CRI_GRID_RL06.3_V4_weekly",
     "conf": {
       "collection_id": "TELLUS_GRAC-GRFO_MASCON_CRI_GRID_RL06.3_V4",

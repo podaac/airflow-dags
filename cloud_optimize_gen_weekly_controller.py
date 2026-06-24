@@ -169,6 +169,10 @@ with DAG(
         )
 
         collection_id = conf.get("collection_id", f"unknown_{index:02d}")
+        collection_done = EmptyOperator(
+            task_id=f"continue_after_collection_{collection_id}",
+            trigger_rule=TriggerRule.ALL_DONE,
+        )
         trigger_task = TriggerDagRunOperator(
             task_id=f"trigger_vds_generation_{collection_id}",
             trigger_dag_id=target_dag_id,
@@ -179,14 +183,9 @@ with DAG(
             allowed_states=["success"],
             failed_states=["failed"],
             retries=1,
-            retry_delay=timedelta(minutes=5),
+            retry_delay=timedelta(minutes=1),
             reset_dag_run=True,
         )
-        trigger_handoff = EmptyOperator(
-            task_id=f"continue_after_trigger_{collection_id}",
-            trigger_rule=TriggerRule.ALL_DONE,
-        )
-
         if venue == "ops":
             sync_uat_task = TriggerDagRunOperator(
                 task_id=f"sync__uat_{collection_id}",
@@ -206,14 +205,6 @@ with DAG(
                 allowed_states=["success"],
                 failed_states=["failed"],
             )
-            sync_uat_handoff = EmptyOperator(
-                task_id=f"continue_after_sync_uat_{collection_id}",
-                trigger_rule=TriggerRule.ALL_DONE,
-            )
-            continue_after_collection = EmptyOperator(
-                task_id=f"continue_after_collection_{collection_id}",
-                trigger_rule=TriggerRule.ALL_DONE,
-            )
 
             # test new vds — if pass then upload to ops public bucket
             test_vds_task = TriggerDagRunOperator(
@@ -227,38 +218,14 @@ with DAG(
                 failed_states=["failed"],
             )
 
-            # sync_ops_task = TriggerDagRunOperator(
-            #     task_id=f"sync_ops_{collection_id}",
-            #     trigger_dag_id="vds_bucket_sync_update",
-            #     trigger_run_id=f"sync_ops_{collection_id}__{{{{ ts_nodash }}}}__{index:02d}",
-            #     conf={
-            #         "mode": "upload_folder",
-            #         "folder": collection_id,
-            #         "ignore_is_same": True,
-            #         "source_bucket": output_bucket,
-            #         "source_prefix": "virtual_collections/",
-            #         "dest_bucket": "podaac-ops-cumulus-public",
-            #         "dest_prefix": "virtual_collections/",
-            #     },
-            #     wait_for_completion=True,
-            #     deferrable=True,
-            #     allowed_states=["success"],
-            #     failed_states=["failed"],
-            # )
-
-            chain(
-                previous_task,
-                trigger_task,
-                trigger_handoff,
-                sync_uat_task,
-            )
-            sync_uat_task >> test_vds_task
-            sync_uat_task >> sync_uat_handoff
-            sync_uat_handoff >> continue_after_collection
-            test_vds_task >> continue_after_collection
-            previous_task = continue_after_collection
+            chain(previous_task, trigger_task, sync_uat_task, test_vds_task)
+            trigger_task >> collection_done
+            sync_uat_task >> collection_done
+            test_vds_task >> collection_done
         else:
-            chain(previous_task, trigger_task, trigger_handoff)
-            previous_task = trigger_handoff
+            chain(previous_task, trigger_task)
+            trigger_task >> collection_done
+
+        previous_task = collection_done
 
     warmup_ec2 >> wait_for_ec2_capacity
