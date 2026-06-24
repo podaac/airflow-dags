@@ -179,13 +179,13 @@ def main():
                 if 0 <= idx < len(keys):
                     selected.append(keys[idx])
                 else:
-                    print(f"Invalid number: {item}")
-                    return
+                    print(f"Invalid number: {item}", file=sys.stderr)
+                    sys.exit(2)
             elif item in COLLECTIONS:
                 selected.append(item)
             else:
-                print(f"Unknown collection: {item}")
-                return
+                print(f"Unknown collection: {item}", file=sys.stderr)
+                sys.exit(2)
     else:
         selected = []
         for name in args.collections:
@@ -195,8 +195,8 @@ def main():
             elif name in COLLECTIONS:
                 selected.append(name)
             else:
-                print(f"Unknown collection: {name}")
-                return
+                print(f"Unknown collection: {name}", file=sys.stderr)
+                sys.exit(2)
 
     protocols = ["https", "s3"] if args.protocol == "both" else [args.protocol]
 
