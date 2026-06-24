@@ -12,10 +12,8 @@ from airflow.models.baseoperator import chain
 from airflow.models.dag import DAG
 from airflow.models import Variable
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import BranchPythonOperator
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sensors.python import PythonSensor
-from airflow.utils.state import State
 from airflow.utils.trigger_rule import TriggerRule
 
 
@@ -81,34 +79,6 @@ def has_running_ec2_capacity(min_age_minutes: int = 3) -> bool:
             if is_running and launch_time and (now - launch_time) >= min_age:
                 return True
     return False
-
-
-def _branch_after_sync_uat(sync_uat_task_id: str, test_vds_task_id: str, continue_task_id: str, **context) -> str:
-    """Route around VDS validation when the UAT sync failed."""
-    dag_run = context["dag_run"]
-    sync_uat_ti = None
-
-    get_task_instance = getattr(dag_run, "get_task_instance", None)
-    if callable(get_task_instance):
-        sync_uat_ti = get_task_instance(sync_uat_task_id)
-    else:
-        task_instances = getattr(dag_run, "task_instances", None) or []
-        sync_uat_ti = next(
-            (task_instance for task_instance in task_instances if getattr(task_instance, "task_id", None) == sync_uat_task_id),
-            None,
-        )
-
-    sync_uat_result = None
-    if sync_uat_ti is None:
-        sync_uat_result = context["ti"].xcom_pull(task_ids=sync_uat_task_id)
-
-    if getattr(sync_uat_ti, "state", None) == State.SUCCESS:
-        return test_vds_task_id
-
-    if sync_uat_result is not None:
-        return test_vds_task_id
-
-    return continue_task_id
 
 
 @task(task_id="warmup_ec2")
@@ -240,16 +210,6 @@ with DAG(
                 task_id=f"continue_after_sync_uat_{collection_id}",
                 trigger_rule=TriggerRule.ALL_DONE,
             )
-            sync_uat_branch = BranchPythonOperator(
-                task_id=f"branch_after_sync_uat_{collection_id}",
-                python_callable=_branch_after_sync_uat,
-                op_kwargs={
-                    "sync_uat_task_id": sync_uat_task.task_id,
-                    "test_vds_task_id": f"test_vds_{collection_id}",
-                    "continue_task_id": sync_uat_handoff.task_id,
-                },
-                trigger_rule=TriggerRule.ALL_DONE,
-            )
             continue_after_collection = EmptyOperator(
                 task_id=f"continue_after_collection_{collection_id}",
                 trigger_rule=TriggerRule.ALL_DONE,
@@ -286,16 +246,14 @@ with DAG(
             #     failed_states=["failed"],
             # )
 
-            # If UAT sync fails, skip VDS testing and ops sync for this collection.
             chain(
                 previous_task,
                 trigger_task,
                 trigger_handoff,
                 sync_uat_task,
-                sync_uat_branch,
             )
-            sync_uat_branch >> test_vds_task
-            sync_uat_branch >> sync_uat_handoff
+            sync_uat_task >> test_vds_task
+            sync_uat_task >> sync_uat_handoff
             sync_uat_handoff >> continue_after_collection
             test_vds_task >> continue_after_collection
             previous_task = continue_after_collection
