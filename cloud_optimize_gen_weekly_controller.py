@@ -218,10 +218,30 @@ with DAG(
                 failed_states=["failed"],
             )
 
-            chain(previous_task, trigger_task, sync_uat_task, test_vds_task)
+            sync_ops_task = TriggerDagRunOperator(
+                task_id=f"sync_ops_{collection_id}",
+                trigger_dag_id="vds_bucket_sync_update",
+                trigger_run_id=f"sync_ops_{collection_id}__{{{{ ts_nodash }}}}__{index:02d}",
+                conf={
+                    "mode": "upload_folder",
+                    "folder": collection_id,
+                    "ignore_is_same": True,
+                    "source_bucket": output_bucket,
+                    "source_prefix": "virtual_collections/",
+                    "dest_bucket": "podaac-ops-cumulus-public",
+                    "dest_prefix": "virtual_collections/",
+                },
+                wait_for_completion=True,
+                deferrable=True,
+                allowed_states=["success"],
+                failed_states=["failed"],
+            )
+
+            chain(previous_task, trigger_task, sync_uat_task, test_vds_task, sync_ops_task)
             trigger_task >> collection_done
             sync_uat_task >> collection_done
             test_vds_task >> collection_done
+            sync_ops_task >> collection_done
         else:
             chain(previous_task, trigger_task)
             trigger_task >> collection_done
