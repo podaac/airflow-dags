@@ -180,7 +180,7 @@ with DAG(
             {"capacityProvider": f"service-virtualzarr-gen-{venue}-ecs-capacity-provider"}],
         tags={
             "task_type": "run_task",
-            "collection_id": conf_or_param("collection_id"),
+            "collection_id": '{{ params["collection_id"] }}',
         },
         overrides={
             "containerOverrides": [
@@ -189,35 +189,35 @@ with DAG(
                   "environment": [
                         {
                           'name': 'COLLECTION',
-                          'value': conf_or_param("collection_id")
+                                                    'value': '{{ params["collection_id"] }}'
                         },
                         {
                           'name': 'LOADABLE_VARS',
-                          'value': conf_or_param("loadable_coordinate_variables")
+                                                    'value': '{{ params["loadable_coordinate_variables"] }}'
                         },
                         {
                           'name': 'OUTPUT_BUCKET',
-                          'value': conf_or_param("output_bucket")
+                                                    'value': '{{ params["output_bucket"] }}'
                         },
                         {
                           'name': 'SSM_EDL_PASSWORD',
-                          'value': conf_or_param("SSM_EDL_PASSWORD")
+                                                    'value': '{{ params["SSM_EDL_PASSWORD"] }}'
                         },
                         {
                           'name': 'SSM_EDL_USERNAME',
-                          'value': conf_or_param("SSM_EDL_USERNAME")
+                                                    'value': '{{ params["SSM_EDL_USERNAME"] }}'
                         },
                         {
                           'name': 'CPU_COUNT',
-                          'value': conf_or_param("CPU_COUNT")
+                                                    'value': '{{ params["CPU_COUNT"] }}'
                         },
                         {
                           'name': 'MEMORY_LIMIT',
-                          'value': conf_or_param("MEMORY_LIMIT")
+                                                    'value': '{{ params["MEMORY_LIMIT"] }}'
                         },
                         {
                           'name': 'BATCH_SIZE',
-                          'value': conf_or_param("BATCH_SIZE")
+                                                    'value': '{{ params["BATCH_SIZE"] }}'
                         },
                         {
                           'name': 'START_DATE',
@@ -229,7 +229,7 @@ with DAG(
                         },
                         {
                           'name': 'STAGING_BUCKET',
-                          'value': conf_or_param("staging_bucket")
+                                                    'value': '{{ params["staging_bucket"] }}'
                         }
                     ]
                 }
