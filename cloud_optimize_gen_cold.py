@@ -221,11 +221,11 @@ with DAG(
                         },
                         {
                           'name': 'START_DATE',
-                                                    'value': '{{ params["START_DATE"] }}'
+                                                    'value': '{{ dag_run.conf.get("START_DATE", "") }}'
                         },
                         {
                           'name': 'END_DATE',
-                                                    'value': '{{ params["END_DATE"] }}'
+                                                    'value': '{{ dag_run.conf.get("END_DATE", "") }}'
                         },
                         {
                           'name': 'STAGING_BUCKET',
